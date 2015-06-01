@@ -70,8 +70,13 @@
                         var peersClone = peers.concat();
                         reset();
                         peersClone.forEach(function(peer) {
-                            peer.send('start');
-                            peer.close();
+                            peer.send({
+                                action: 'start',
+                                peerIds: peersClone.map(function(peer) { return peer.peer; })
+                            });
+                            requestAnimationFrame(function() {
+                                peer.close();
+                            });
                         });
                     }
                 }

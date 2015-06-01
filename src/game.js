@@ -1,4 +1,66 @@
 (function() {
+
+    /**
+     * List of peers.
+     * @type {DataConnection[]}
+     */
+    var peers = [];
+
+    /**
+     * Adds a peer into the list.
+     * @param {DataConnection} conn
+     */
+    function addPeer(conn) {
+        peers.push(conn);
+    }
+
+    /**
+     * Removes a peer from the list.
+     * @param {DataConnection} conn
+     */
+    function removePeer(conn) {
+        var i = peers.length;
+        while (--i >= 0) {
+            if (peers[i].peer === conn.peer) {
+                peers.splice(i, 1);
+                break;
+            }
+        }
+    }
+
+    /**
+     * Starts game.
+     * @param {string[]} peerIds
+     */
+    function startGame(peerIds) {
+        if (!peerIds || !peerIds.length) {
+            // TODO: show error on the game client
+            console.error('Oops! Error connecting to peers');
+        } else {
+            peerIds.forEach(function(peerId) {
+                var conn = peer.connect(peerId);
+                conn.on('open', function () {
+                    console.log('[PEER CONNECTION OPEN]', conn);
+                    addPeer(conn);
+                });
+                conn.on('data', function(data) {
+                    console.log(data);
+                });
+                conn.on('close', function() {
+                    console.log('[PEER CONNECTION CLOSE]', conn);
+                    removePeer(conn);
+                });
+                conn.on('error', function(error) {
+                    console.error('[PEER CONNECTION ERROR]', conn, error);
+                });
+            });
+        }
+    }
+
+    /**
+     * Peer object for this game client.
+     * @type {Peer}
+     */
     var peer = new Peer({
         //key: 'apv9cn0q4669wwmi'
         port: 9999,
@@ -14,8 +76,9 @@
         });
         adminConn.on('data', function(data) {
             console.log('[CONNECTION DATA]', data);
-            if (data === 'start') {
-                // start game and remove connection to admin
+            // disconnect from admin, connect to peers and start game
+            if (data.action === 'start') {
+                startGame(data.peerIds);
             }
         });
         adminConn.on('close', function() {
