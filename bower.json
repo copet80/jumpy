@@ -1,0 +1,9 @@
+{
+  "name": "jumpy-client",
+  "private": true,
+  "dependencies": {
+    "peerjs": "~0.3.14",
+    "bootstrap": "~3.3.4",
+    "font-awesome": "~4.3.0"
+  }
+}

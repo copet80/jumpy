@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+    <title>Jumpy Game P2P Monitor</title>
+    <link rel="stylesheet" href="../vendor/bootstrap/dist/css/bootstrap.min.css">
+    <link rel="stylesheet" href="../vendor/bootstrap/dist/css/bootstrap-theme.min.css">
+    <link rel="stylesheet" href="../vendor/font-awesome/css/font-awesome.min.css">
+    <script src="../vendor/jquery/dist/jquery.min.js"></script>
+    <script src="../vendor/bootstrap/dist/js/bootstrap.min.js"></script>
+    <script src="../vendor/peerjs/peer.min.js"></script>
+    <script src="app.js"></script>
+</head>
+<body>
+<div id="players-list" class="container">
+    <div class="page-header">
+        <h4>Jumpy Game P2P Monitor</h4>
+    </div>
+    <p>
+        Total number of players:
+        <span id="num-players">0</span>
+    </p>
+    <p id="">
+        Game starting in:
+        <span id="countdown">... waiting for at least 2 players</span>
+    </p>
+    <table class="table table-condensed table-bordered">
+        <thead>
+        <tr>
+            <th>#</th>
+            <th>Player ID</th>
+            <th>Browser</th>
+        </tr>
+        </thead>
+        <tbody>
+        </tbody>
+    </table>
+</div>
+</body>
+</html>

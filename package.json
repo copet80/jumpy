@@ -1,0 +1,19 @@
+{
+  "name": "jumpy",
+  "description": "Jumpy game.",
+  "version": "1.0.0",
+  "authors": [
+    "Anthony Tambrin"
+  ],
+  "scripts": {
+    "postinstall": "bower install --allow-root"
+  },
+  "devDependencies": {
+    "gulp": "^3.8.11",
+    "gulp-express": "^0.3.5",
+    "peer": "^0.2.8",
+    "express": "^4.12.4",
+    "express-cors": "0.0.3",
+    "async": "^1.0.0"
+  }
+}
