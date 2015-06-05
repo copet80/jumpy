@@ -251,11 +251,25 @@ define([
      * @private
      */
     function onDocumentKeyDown(event) {
-        console.log(event.keyCode);
         switch (event.keyCode) {
             // ESC key
             case 27:
                 break;
+
+            // LEFT key
+            case 37:
+                break;
+
+            // UP key
+            case 38:
+                break;
+
+            // RIGHT key
+            case 39:
+                break;
+        }
+        if (__game) {
+            __game.handleDocumentKeyDown(event);
         }
     }
 

@@ -65,6 +65,13 @@ define([
 
     /**
      * @private
+     * Skies.
+     * @type {object}
+     */
+    Game.prototype._skies = null;
+
+    /**
+     * @private
      * Container Y position.
      * @type {number}
      */
@@ -243,6 +250,26 @@ define([
     };
 
     /**
+     * Handles document key down.
+     */
+    Game.prototype.handleDocumentKeyDown = function(event) {
+        console.log(event.keyCode);
+        switch (event.keyCode) {
+            // LEFT key
+            case 37:
+                break;
+
+            // UP key
+            case 38:
+                break;
+
+            // RIGHT key
+            case 39:
+                break;
+        }
+    };
+
+    /**
      * @private
      * Initializes graphics containers.
      */
@@ -265,7 +292,19 @@ define([
      * Initializes game backdrop.
      */
     Game.prototype._initBackdrop = function() {
-        // TODO
+        this._skies = [];
+        console.log('initBackdrop');
+
+        var i = 2;
+        var sky;
+        while (--i >= 0) {
+            sky = new createjs.Bitmap(SpriteDictionary.SPRITE_SKY);
+            sky.x = 0;
+            sky.y = 0;
+            sky.mouseEnabled = sky.mouseChildren = false;
+            this._skies.push(sky);
+            this._backdropContainer.addChild(sky);
+        }
     };
 
     /**
