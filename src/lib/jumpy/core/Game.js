@@ -9,11 +9,14 @@ define([
     "jumpy/sprite/SpriteDictionary",
     "jumpy/sound/SoundManager",
     "jumpy/sound/SoundDictionary",
+    "jumpy/core/ParallaxGroup",
+    "jumpy/core/TreeTrunk",
+    "jumpy/core/Sky",
     "jumpy/core/Platform",
     "jumpy/core/Character"
 ], function(
     createjs, GameConfig, SpriteDictionary, SoundManager, SoundDictionary,
-    Platform, Character
+    ParallaxGroup, TreeTrunk, Sky, Platform, Character
 ) {
     // ===========================================
     //  Event Types
@@ -65,10 +68,17 @@ define([
 
     /**
      * @private
-     * Skies.
-     * @type {object}
+     * Sky.
+     * @type {ParallaxGroup}
      */
-    Game.prototype._skies = null;
+    Game.prototype._sky = null;
+
+    /**
+     * @private
+     * Tree trunk.
+     * @type {ParallaxGroup}
+     */
+    Game.prototype._treeTrunk = null;
 
     /**
      * @private
@@ -90,6 +100,13 @@ define([
      * @type {createjs.Stage}
      */
     Game.prototype._stage = null;
+
+    /**
+     * @private
+     * Current step value.
+     * @type {number}
+     */
+    Game.prototype._currentStep = null;
 
     /**
      * @private
@@ -132,6 +149,7 @@ define([
         this.clip = new createjs.Container();
         this.clip.mouseEnabled = this.clip.mouseChildren = false;
         this._containerY = 0;
+        this._currentStep = 0;
         this._stage = stage;
         this._stage.ref = this;
         this._currentAnimalId = GameConfig.ANIMALS[0];
@@ -188,6 +206,9 @@ define([
      * Initializes game engine. Should be called from outside.
      */
     Game.prototype.init = function() {
+        // TO REMOVE
+        document.addEventListener("mousewheel", onDocumentScroll.bind(this), false);
+
         this._initContainers();
         this._initBackdrop();
         this._initCharacters();
@@ -212,6 +233,7 @@ define([
      * Resets the game.
      */
     Game.prototype.reset = function() {
+        this._currentStep = 0;
         this.isActive = true;
 
         // TODO
@@ -292,19 +314,11 @@ define([
      * Initializes game backdrop.
      */
     Game.prototype._initBackdrop = function() {
-        this._skies = [];
-        console.log('initBackdrop');
+        this._sky = new ParallaxGroup(Sky, 0.25);
+        this._backdropContainer.addChild(this._sky.clip);
 
-        var i = 2;
-        var sky;
-        while (--i >= 0) {
-            sky = new createjs.Bitmap(SpriteDictionary.SPRITE_SKY);
-            sky.x = 0;
-            sky.y = 0;
-            sky.mouseEnabled = sky.mouseChildren = false;
-            this._skies.push(sky);
-            this._backdropContainer.addChild(sky);
-        }
+        this._treeTrunk = new ParallaxGroup(TreeTrunk);
+        this._backdropContainer.addChild(this._treeTrunk.clip);
     };
 
     /**
@@ -383,7 +397,7 @@ define([
             soundId,
             x,
             y,
-            -this._containerX + GameConfig.VIEWPORT_HALF_WIDTH,
+            GameConfig.VIEWPORT_HALF_WIDTH,
             -this._containerY + GameConfig.VIEWPORT_HALF_HEIGHT,
             loop
         );
@@ -420,6 +434,18 @@ define([
     function onCharacterJump(event) {
         var character = event.currentTarget;
         // TODO
+    }
+
+    /**
+     * @private
+     * TO REMOVE
+     */
+    function onDocumentScroll(event) {
+        var event = window.event || event; // old IE support
+        var delta = Math.max(-1, Math.min(1, (event.wheelDelta || -event.detail)));
+        this._currentStep -= delta * 20;
+        this._sky.update(this._currentStep);
+        this._treeTrunk.update(this._currentStep);
     }
 
     return Game;

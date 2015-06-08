@@ -6,34 +6,29 @@
 define([
     "createjs",
     "jumpy/core/GameConfig",
+    "jumpy/core/ParallaxObject",
     "jumpy/sprite/SpriteDictionary"
-], function(createjs, GameConfig, SpriteDictionary) {
+], function(createjs, GameConfig, ParallaxObject, SpriteDictionary) {
     // ===========================================
     //  Public Constants
     // ===========================================
     /**
-     * Trunk platform type.
-     * @type {number}
-     */
-    Platform.TYPE_TRUNK = 0;
-
-    /**
      * Center platform index.
      * @type {number}
      */
-    Platform.TYPE_CENTER = 1;
+    Platform.TYPE_CENTER = 0;
 
     /**
      * Right platform index.
      * @type {number}
      */
-    Platform.TYPE_RIGHT = 2;
+    Platform.TYPE_RIGHT = 1;
 
     /**
      * Left platform index.
      * @type {number}
      */
-    Platform.TYPE_LEFT = 3;
+    Platform.TYPE_LEFT = 2;
 
     // ===========================================
     //  Private Constants
@@ -53,21 +48,6 @@ define([
     const SPRITE_HEIGHT = 160;
 
     // ===========================================
-    //  Public Members
-    // ===========================================
-    /**
-     * Clip object to add to the stage.
-     * @type {createjs.Container}
-     */
-    Platform.prototype.clip = null;
-
-    /**
-     * Sprite object.
-     * @type {createjs.Sprite}
-     */
-    Platform.prototype.sprite = null;
-
-    // ===========================================
     //  Protected Members
     // ===========================================
     /**
@@ -84,12 +64,19 @@ define([
      * @constructor
      * Creates an instance of this class.
      *
-     * @param {string} teamId ID of the team the platform should represent.
+     * @param {string} type Platform type.
+     * @see TYPE_TRUNK
+     * @see TYPE_CENTER
+     * @see TYPE_RIGHT
+     * @see TYPE_LEFT
      */
     function Platform(type) {
-        this._initSprite();
+        ParallaxObject.call(this);
         this.type = type;
     }
+
+    // Extends the parent class
+    Platform.prototype = Object.create(ParallaxObject.prototype);
 
     // Extends createjs EventDispatcher
     createjs.EventDispatcher.initialize(Platform.prototype);
@@ -98,7 +85,7 @@ define([
     //  Getters / Setters
     // ===========================================
     /**
-     * Current team ID.
+     * Current platform type.
      * @type {string}
      */
     Platform.prototype.__defineGetter__("type", function() {
@@ -107,10 +94,6 @@ define([
     Platform.prototype.__defineSetter__("type", function(value) {
         this._type = value;
         switch (this._type) {
-            case Platform.TYPE_TRUNK:
-                this.sprite.gotoAndStop(6);
-                break;
-
             case Platform.TYPE_CENTER:
                 this.sprite.gotoAndStop(Math.random() < 0.5 ? 0 : 1);
                 break;
@@ -145,8 +128,6 @@ define([
      * Initialize sprite.
      */
     Platform.prototype._initSprite = function() {
-        this.clip = new createjs.Container();
-
         var data = {
             framerate: 5,
             images: [
@@ -162,10 +143,6 @@ define([
         };
         this.sprite = new createjs.Sprite(new createjs.SpriteSheet(data));
         this.sprite.y = 0;
-        this.clip.addChild(this.sprite);
-
-        // delay invalidate so to make sure all assets are loaded with correct dimensions
-        setTimeout.call(this, this.invalidate, GameConfig.INVALIDATE_DELAY);
     };
 
     return Platform;

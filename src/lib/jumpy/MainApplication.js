@@ -92,7 +92,6 @@ define([
         // initialize screens
         __titleScreen = new TitleScreen("titleScreen");
         __titleScreen.on(TitleScreen.PLAY_CLICK, onTitleScreenPlayClick);
-        __stage.addChild(__titleScreen.clip);
         __titleScreen.clip.visible = false;
 
         // initialize the game and HUD
@@ -103,6 +102,9 @@ define([
         __hudScreen = new HUDScreen("hudScreen");
         __stage.addChild(__hudScreen.clip);
         __hudScreen.clip.visible = false;
+
+        // make sure title screen is on top
+        __stage.addChild(__titleScreen.clip);
 
         // needs delay for button positioning
         setTimeout(ready, GameConfig.INVALIDATE_DELAY);
@@ -200,13 +202,29 @@ define([
         __titleScreen.clip.visible = true;
         __hudScreen.clip.visible = false;
         __hudScreen.reset();
-        __game.clip.visible = false;
-        __game.isPaused = true;
+        __game.clip.visible = true;
+        __game.isPaused = false;
 
         __soundManager.stopSounds();
         if (!__soundManager.isPlayingMusic(SoundDictionary.MUSIC_TITLE)) {
-            __soundManager.playMusic(SoundDictionary.MUSIC_TITLE);
+            //__soundManager.playMusic(SoundDictionary.MUSIC_TITLE);
         }
+    }
+
+    /**
+     * @private
+     * Resumes game loop.
+     */
+    function resume() {
+        createjs.Ticker.addEventListener("tick", update);
+    }
+
+    /**
+     * @private
+     * Pauses game loop.
+     */
+    function pause() {
+        createjs.Ticker.removeEventListener("tick", update);
     }
 
     /**
@@ -229,6 +247,7 @@ define([
     function onAssetsLoadComplete(event) {
         init();
         initGame();
+        resume();
     }
 
     /**

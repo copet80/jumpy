@@ -23,6 +23,13 @@ define([
     // ===========================================
     /**
      * @private
+     * Game logo.
+     * @type {createjs.Bitmap}
+     */
+    TitleScreen.prototype._logo = null;
+
+    /**
+     * @private
      * Play button.
      * @type {Button}
      */
@@ -50,12 +57,21 @@ define([
     TitleScreen.prototype.invalidate = function() {
         var success = BaseScreen.prototype.invalidate.call(this);
 
+        if (this._logo) {
+            if (this._logo.width === 0) {
+                success = false;
+            }
+            this._logo.regX = this._logo.image.width * 0.5;
+            this._logo.regY = this._logo.image.height * 0.5;
+            this._logo.x = GameConfig.VIEWPORT_HALF_WIDTH;
+            this._logo.y = GameConfig.VIEWPORT_HEIGHT * 0.2;
+        }
         if (this._btnPlay) {
             if (!this._btnPlay.invalidate()) {
                 success = false;
             }
             this._btnPlay.clip.x = GameConfig.VIEWPORT_WIDTH * 0.5;
-            this._btnPlay.clip.y = GameConfig.VIEWPORT_HEIGHT * 0.85;
+            this._btnPlay.clip.y = GameConfig.VIEWPORT_HEIGHT * 0.55;
         }
 
         return success;
@@ -69,6 +85,10 @@ define([
      */
     TitleScreen.prototype._initClip = function() {
         BaseScreen.prototype._initClip.call(this);
+
+        // logo
+        this._logo = new createjs.Bitmap(SpriteDictionary.BITMAP_LOGO);
+        this.clip.addChild(this._logo);
 
         // start button
         this._btnPlay = new Button("btnPlay", SpriteDictionary.BITMAP_PLAY_BUTTON);

@@ -100,10 +100,6 @@ define([
      */
     Character.prototype.invalidate = function() {
         this.sprite.stop();
-
-        if (!this._isJumping) {
-            this.faceDir(this._currentDir, true);
-        }
     };
 
     // ===========================================
