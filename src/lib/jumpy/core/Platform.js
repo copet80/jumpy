@@ -78,12 +78,25 @@ define([
     // Extends the parent class
     Platform.prototype = Object.create(ParallaxObject.prototype);
 
-    // Extends createjs EventDispatcher
-    createjs.EventDispatcher.initialize(Platform.prototype);
-
     // ===========================================
     //  Getters / Setters
     // ===========================================
+    /**
+     * Sprite width.
+     * @type {string}
+     */
+    Platform.prototype.__defineGetter__("spriteWidth", function() {
+        return SPRITE_WIDTH;
+    });
+
+    /**
+     * Sprite height.
+     * @type {string}
+     */
+    Platform.prototype.__defineGetter__("spriteHeight", function() {
+        return SPRITE_HEIGHT;
+    });
+
     /**
      * Current platform type.
      * @type {string}
@@ -129,7 +142,7 @@ define([
      */
     Platform.prototype._initSprite = function() {
         var data = {
-            framerate: 5,
+            framerate: 0,
             images: [
                 SpriteDictionary.SPRITE_PLATFORMS
             ],

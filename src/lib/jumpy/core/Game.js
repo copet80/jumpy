@@ -12,11 +12,11 @@ define([
     "jumpy/core/ParallaxGroup",
     "jumpy/core/TreeTrunk",
     "jumpy/core/Sky",
-    "jumpy/core/Platform",
+    "jumpy/core/PlatformGroup",
     "jumpy/core/Character"
 ], function(
     createjs, GameConfig, SpriteDictionary, SoundManager, SoundDictionary,
-    ParallaxGroup, TreeTrunk, Sky, Platform, Character
+    ParallaxGroup, TreeTrunk, Sky, PlatformGroup, Character
 ) {
     // ===========================================
     //  Event Types
@@ -61,8 +61,8 @@ define([
 
     /**
      * @private
-     * Platforms.
-     * @type {object}
+     * Platforms group.
+     * @type {PlatformGroup}
      */
     Game.prototype._platforms = null;
 
@@ -326,7 +326,8 @@ define([
      * Initializes platforms.
      */
     Game.prototype._initPlatforms = function() {
-        this._platforms = [];
+        this._platforms = new PlatformGroup();
+        this._platformsContainer.addChild(this._platforms.clip);
 
         // TODO
     };
@@ -446,6 +447,7 @@ define([
         this._currentStep -= delta * 20;
         this._sky.update(this._currentStep);
         this._treeTrunk.update(this._currentStep);
+        this._platforms.update(this._currentStep);
     }
 
     return Game;
