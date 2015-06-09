@@ -59,6 +59,22 @@ define([
     });
 
     // ===========================================
+    //  Public Methods
+    // ===========================================
+    /**
+     * Gets platform type by platform index.
+     * @param {number} platformIndex Platform index.
+     * @returns {number} Platform type.
+     */
+    PlatformGroup.prototype.getPlatformType = function(platformIndex) {
+        var nextPlatform = this._objects.filter(function(platform) {
+            return platform.y > GameConfig.VIEWPORT_HEIGHT - Platform.SPRITE_HEIGHT * 2 &&
+                   platform.y < GameConfig.VIEWPORT_HEIGHT - Platform.SPRITE_HEIGHT * 1;
+        })[0];
+        return nextPlatform.type;
+    };
+
+    // ===========================================
     //  Private Methods
     // ===========================================
     /**

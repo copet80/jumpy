@@ -203,7 +203,7 @@ define([
         __hudScreen.clip.visible = false;
         __hudScreen.reset();
         __game.clip.visible = true;
-        __game.isPaused = false;
+        __game.resume();
 
         __soundManager.stopSounds();
         if (!__soundManager.isPlayingMusic(SoundDictionary.MUSIC_TITLE)) {

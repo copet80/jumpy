@@ -30,22 +30,19 @@ define([
      */
     Platform.TYPE_LEFT = 2;
 
-    // ===========================================
-    //  Private Constants
-    // ===========================================
     /**
      * @private
      * Sprite width.
      * @type {number}
      */
-    const SPRITE_WIDTH = 420;
+    Platform.SPRITE_WIDTH = 420;
 
     /**
      * @private
      * Sprite height.
      * @type {number}
      */
-    const SPRITE_HEIGHT = 160;
+    Platform.SPRITE_HEIGHT = 160;
 
     // ===========================================
     //  Protected Members
@@ -80,7 +77,7 @@ define([
      * @type {string}
      */
     Platform.prototype.__defineGetter__("spriteWidth", function() {
-        return SPRITE_WIDTH;
+        return Platform.SPRITE_WIDTH;
     });
 
     /**
@@ -88,7 +85,7 @@ define([
      * @type {string}
      */
     Platform.prototype.__defineGetter__("spriteHeight", function() {
-        return SPRITE_HEIGHT;
+        return Platform.SPRITE_HEIGHT;
     });
 
     /**
@@ -144,9 +141,9 @@ define([
                 SpriteDictionary.SPRITE_PLATFORMS
             ],
             frames: {
-                width: SPRITE_WIDTH,
-                height: SPRITE_HEIGHT,
-                regX: SPRITE_WIDTH * 0.5,
+                width: Platform.SPRITE_WIDTH,
+                height: Platform.SPRITE_HEIGHT,
+                regX: Platform.SPRITE_WIDTH * 0.5,
                 regY: 0
             },
             animations: {}

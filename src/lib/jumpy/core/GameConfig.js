@@ -70,6 +70,18 @@ define([
     GameConfig.DEFAULT_MUSIC_ON = true;
 
     /**
+     * Successful jump animation duration.
+     * @type {boolean}
+     */
+    GameConfig.JUMP_SUCCESS_DURATION = 100;
+
+    /**
+     * Failed jump animation duration.
+     * @type {boolean}
+     */
+    GameConfig.JUMP_FAIL_DURATION = 500;
+
+    /**
      * Animal IDs.
      * @type {object[]}
      */

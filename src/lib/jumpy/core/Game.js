@@ -13,10 +13,11 @@ define([
     "jumpy/core/TreeTrunk",
     "jumpy/core/Sky",
     "jumpy/core/PlatformGroup",
+    "jumpy/core/Platform",
     "jumpy/core/Character"
 ], function(
     createjs, GameConfig, SpriteDictionary, SoundManager, SoundDictionary,
-    ParallaxGroup, TreeTrunk, Sky, PlatformGroup, Character
+    ParallaxGroup, TreeTrunk, Sky, PlatformGroup, Platform, Character
 ) {
     // ===========================================
     //  Event Types
@@ -110,6 +111,13 @@ define([
 
     /**
      * @private
+     * Current platform index.
+     * @type {number}
+     */
+    Game.prototype._platformIndex = null;
+
+    /**
+     * @private
      * Characters container.
      * @type {createjs.Container}
      */
@@ -150,6 +158,7 @@ define([
         this.clip.mouseEnabled = this.clip.mouseChildren = false;
         this._containerY = 0;
         this._currentStep = 0;
+        this._platformIndex = 0;
         this._stage = stage;
         this._stage.ref = this;
         this._currentAnimalId = GameConfig.ANIMALS[0];
@@ -206,9 +215,6 @@ define([
      * Initializes game engine. Should be called from outside.
      */
     Game.prototype.init = function() {
-        // TO REMOVE
-        document.addEventListener("mousewheel", onDocumentScroll.bind(this), false);
-
         this._initContainers();
         this._initBackdrop();
         this._initCharacters();
@@ -222,21 +228,17 @@ define([
      * Invalidates all game elements.
      */
     Game.prototype.invalidate = function() {
-        var success = true;
-
-        // TODO
-
-        return success;
+        return true;
     };
 
     /**
      * Resets the game.
      */
     Game.prototype.reset = function() {
+        this._containerY = 0;
         this._currentStep = 0;
+        this._platformIndex = 0;
         this.isActive = true;
-
-        // TODO
 
         this.resume();
     };
@@ -268,27 +270,21 @@ define([
         if (!this.clip.visible) return;
         if (this._isPaused) return;
 
-        // TODO
+        if (this._currentStep < 0) {
+            this._currentStep = 0;
+        }
+        this._sky.update(this._currentStep);
+        this._treeTrunk.update(this._currentStep);
+        this._platforms.update(this._currentStep);
     };
 
     /**
-     * Handles document key down.
+     * Jumps to a particular step.
      */
-    Game.prototype.handleDocumentKeyDown = function(event) {
-        console.log(event.keyCode);
-        switch (event.keyCode) {
-            // LEFT key
-            case 37:
-                break;
-
-            // UP key
-            case 38:
-                break;
-
-            // RIGHT key
-            case 39:
-                break;
-        }
+    Game.prototype.jumpTo = function(step) {
+        createjs.Tween.get(this).to({
+            _currentStep: step
+        }, GameConfig.JUMP_SUCCESS_DURATION, createjs.Ease.sineInOut);
     };
 
     /**
@@ -414,6 +410,39 @@ define([
         this._playSound(SoundDictionary.SOUND_JUMP, character.x, character.y, loop);
     };
 
+    /**
+     * Handles document key down.
+     */
+    Game.prototype.handleDocumentKeyDown = function(event) {
+        // ignore if still jumping
+        if (createjs.Tween.hasActiveTweens(this)) {
+            return;
+        }
+
+        var jumpSuccess = false;
+        var nextPlatformType = this._platforms.getPlatformType(this._platformIndex + 1);
+        switch (event.keyCode) {
+            // LEFT key
+            case 37:
+                jumpSuccess = nextPlatformType === Platform.TYPE_LEFT;
+                break;
+
+            // UP key
+            case 38:
+                jumpSuccess = nextPlatformType === Platform.TYPE_CENTER;
+                break;
+
+            // RIGHT key
+            case 39:
+                jumpSuccess = nextPlatformType === Platform.TYPE_RIGHT;
+                break;
+        }
+
+        if (jumpSuccess) {
+            this.jumpTo(++this._platformIndex * Platform.SPRITE_HEIGHT);
+        }
+    };
+
     // ===========================================
     //  Event Handlers
     // ===========================================
@@ -435,22 +464,6 @@ define([
     function onCharacterJump(event) {
         var character = event.currentTarget;
         // TODO
-    }
-
-    /**
-     * @private
-     * TO REMOVE
-     */
-    function onDocumentScroll(event) {
-        var event = window.event || event; // old IE support
-        var delta = Math.max(-1, Math.min(1, (event.wheelDelta || -event.detail)));
-        this._currentStep -= delta * 20;
-        if (this._currentStep < 0) {
-            this._currentStep = 0;
-        }
-        this._sky.update(this._currentStep);
-        this._treeTrunk.update(this._currentStep);
-        this._platforms.update(this._currentStep);
     }
 
     return Game;
