@@ -445,6 +445,9 @@ define([
         var event = window.event || event; // old IE support
         var delta = Math.max(-1, Math.min(1, (event.wheelDelta || -event.detail)));
         this._currentStep -= delta * 20;
+        if (this._currentStep < 0) {
+            this._currentStep = 0;
+        }
         this._sky.update(this._currentStep);
         this._treeTrunk.update(this._currentStep);
         this._platforms.update(this._currentStep);

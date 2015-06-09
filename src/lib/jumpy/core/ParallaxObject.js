@@ -24,6 +24,18 @@ define([
      */
     ParallaxObject.prototype.sprite = null;
 
+    /**
+     * Real X position.
+     * @type {number}
+     */
+    ParallaxObject.prototype.rx = null;
+
+    /**
+     * Real Y position.
+     * @type {number}
+     */
+    ParallaxObject.prototype.ry = null;
+
     // ===========================================
     //  Constructor
     // ===========================================
@@ -32,6 +44,9 @@ define([
      * Creates an instance of this class.
      */
     function ParallaxObject() {
+        MovingObject.call(this);
+        this.rx = 0;
+        this.ry = 0;
         this._initClip();
     }
 

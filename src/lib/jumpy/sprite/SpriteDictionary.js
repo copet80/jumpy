@@ -14,7 +14,6 @@ define([
     SpriteDictionary.SPRITE_PLATFORMS = "assets/sprites/platforms.png";
     SpriteDictionary.SPRITE_COUNTDOWN = "assets/sprites/countdown.png";
     SpriteDictionary.SPRITE_SKY = "assets/sprites/sky.png";
-    SpriteDictionary.SPRITE_TREE = "assets/sprites/tree.png";
     SpriteDictionary.SPRITE_TREE_TRUNK = "assets/sprites/tree-trunk.png";
 
     // Bitmaps
@@ -27,7 +26,6 @@ define([
         SpriteDictionary.SPRITE_PLATFORMS,
         SpriteDictionary.SPRITE_COUNTDOWN,
         SpriteDictionary.SPRITE_SKY,
-        SpriteDictionary.SPRITE_TREE,
         SpriteDictionary.SPRITE_TREE_TRUNK
     ];
 

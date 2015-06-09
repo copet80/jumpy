@@ -63,16 +63,10 @@ define([
     /**
      * @constructor
      * Creates an instance of this class.
-     *
-     * @param {string} type Platform type.
-     * @see TYPE_TRUNK
-     * @see TYPE_CENTER
-     * @see TYPE_RIGHT
-     * @see TYPE_LEFT
      */
-    function Platform(type) {
+    function Platform() {
         ParallaxObject.call(this);
-        this.type = type;
+        this.pageIndex = 0;
     }
 
     // Extends the parent class
@@ -104,6 +98,9 @@ define([
     Platform.prototype.__defineGetter__("type", function() {
         return this._type;
     });
+    /**
+     * @private
+     */
     Platform.prototype.__defineSetter__("type", function(value) {
         this._type = value;
         switch (this._type) {

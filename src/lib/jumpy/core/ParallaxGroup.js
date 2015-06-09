@@ -21,34 +21,46 @@ define([
     //  Private Members
     // ===========================================
     /**
+     * @private
      * Class of the parallax object to create.
      * @type {function}
      */
     ParallaxGroup.prototype._objectClass = null;
 
     /**
+     * @private
      * List of parallax objects.
      * @type {ParallaxObject[]}
      */
     ParallaxGroup.prototype._objects = null;
 
     /**
+     * @private
      * Parallax objects count.
      * @type {number}
      */
     ParallaxGroup.prototype._objectsCount = null;
 
     /**
+     * @private
      * Moving speed, can be negative values.
      * @type {number}
      */
     ParallaxGroup.prototype._speed = null;
 
     /**
-     * Current _step value.
+     * @private
+     * Current step value.
      * @type {number}
      */
     ParallaxGroup.prototype._step = null;
+
+    /**
+     * @private
+     * Bound height before object wraps.
+     * @type {number}
+     */
+    ParallaxGroup.prototype._boundHeight = null;
 
     // ===========================================
     //  Constructor
@@ -108,7 +120,12 @@ define([
         var object;
         while (--i >= 0) {
             object = this._objects[i];
-            object.y = ((scrollValue + object.spriteHeight * i) % (Math.max(object.spriteHeight, GameConfig.VIEWPORT_HEIGHT) * 2)) - object.spriteHeight;
+            object.ry = scrollValue + object.spriteHeight * i;
+            object.y = (object.ry % this._boundHeight) - object.spriteHeight;
+            if (object.y < -object.spriteHeight) {
+                object.y += this._boundHeight;
+            }
+            this.postObjectUpdate(object, i);
             object.update();
         }
     };
@@ -137,18 +154,28 @@ define([
         this._objects = [];
 
         var sample = new this._objectClass();
-        var requiredCount = Math.max(Math.floor((GameConfig.VIEWPORT_HEIGHT * 2) / sample.spriteHeight), 1) + 1;
+        var requiredCount = Math.max(Math.floor((GameConfig.VIEWPORT_HEIGHT + sample.spriteHeight) / sample.spriteHeight), 1) + 1;
+        this._boundHeight = Math.ceil(GameConfig.VIEWPORT_HEIGHT / sample.spriteHeight) * sample.spriteHeight + sample.spriteHeight;
         var i = requiredCount;
         var object;
         while (--i >= 0) {
             object = new this._objectClass();
-            object.x = GameConfig.VIEWPORT_HALF_WIDTH;
-            object.y = 0;
+            object.x = object.rx = GameConfig.VIEWPORT_HALF_WIDTH;
+            object.y = object.ry = 0;
             this._objects.push(object);
             this.clip.addChild(object.clip);
         }
         this._objectsCount = this._objects.length;
         this.update();
+    };
+
+    /**
+     * Post processing on object after update loop.
+     * @param {ParallaxObject} object Object affected.
+     * @param {number} index Index of the object in the loop.
+     */
+    ParallaxGroup.prototype.postObjectUpdate = function(object, index) {
+        // Specific implementation is done on the child classes.
     };
 
     return ParallaxGroup;
