@@ -10,15 +10,6 @@ define([
     "jumpy/sprite/SpriteDictionary"
 ], function(createjs, GameConfig, SpriteSheetConfig, SpriteDictionary) {
     // ===========================================
-    //  Event Types
-    // ===========================================
-    /**
-     * Dispatched when jump is performed.
-     * @type {string}
-     */
-    Character.JUMP = "jump";
-
-    // ===========================================
     //  Public Members
     // ===========================================
     /**
@@ -42,20 +33,19 @@ define([
     // ===========================================
     //  Protected Members
     // ===========================================
-
-    /**
-     * @private
-     * True if jumping, false otherwise.
-     * @type {boolean}
-     */
-    Character.prototype._isJumping = null;
-
     /**
      * @private
      * ID of the animal this character is represented by.
      * @type {string}
      */
     Character.prototype._animalId = null;
+
+    /**
+     * @private
+     * Current animation state.
+     * @type {string}
+     */
+    Character.prototype._currentAnimationState = null;
 
     // ===========================================
     //  Constructor
@@ -68,7 +58,6 @@ define([
      */
     function Character(id) {
         if (typeof(id) === "undefined") id = "";
-        this._isJumping = false;
         this._initSprite();
     }
 
@@ -90,6 +79,7 @@ define([
      */
     Character.prototype.__defineSetter__("animalId", function(value) {
         this._animalId = value;
+        this.animate(this._currentAnimationState);
     });
 
     // ===========================================
@@ -162,22 +152,31 @@ define([
     Character.prototype.switchTeam = function(animalId) {
         createjs.Tween.removeTweens(this);
         this._animalId = animalId;
-        this._isJumping = false;
         this.invalidate();
     };
 
     /**
-     * Jumps to a platform.
-     *
-     * @param {number} platformIndex Platform index to jump to.
-     * @see Platform.TYPE_CENTER
-     * @see Platform.TYPE_LEFT
-     * @see Platform.TYPE_RIGHT
+     * Plays idle animation.
      */
-    Character.prototype.jump = function(platformIndex) {
-        this._isJumping = true;
+    Character.prototype.idle = function() {
+        this._currentAnimationState = SpriteSheetConfig.IDLE;
+        this.animate(this._currentAnimationState);
+    };
 
-        this.dispatchEvent(new createjs.Event(Character.JUMP));
+    /**
+     * Plays jump animation.
+     */
+    Character.prototype.jump = function() {
+        this._currentAnimationState = SpriteSheetConfig.JUMP;
+        this.animate(this._currentAnimationState);
+    };
+
+    /**
+     * Plays land animation.
+     */
+    Character.prototype.land = function() {
+        this._currentAnimationState = SpriteSheetConfig.LAND;
+        this.animate(this._currentAnimationState);
     };
 
     // ===========================================

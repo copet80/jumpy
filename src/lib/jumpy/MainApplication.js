@@ -38,6 +38,7 @@ define([
      * Creates an instance of this class.
      */
     function MainApplication() {
+        Math.rand = new Math.seedrandom();
         createjs.Ticker.setFPS(GameConfig.FPS);
         document.onkeydown = onDocumentKeyDown;
         __soundManager = SoundManager.getInstance();

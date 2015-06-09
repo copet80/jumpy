@@ -65,18 +65,22 @@ define([
                 frames: [
                     offset + 0,
                     offset + 1
-                ]
+                ],
+                speed: 0.5,
+                next: animal + "_" + SpriteSheetConfig.IDLE
             };
-            data.animations[animal.id + "_" + SpriteSheetConfig.JUMP] = {
+            data.animations[animal + "_" + SpriteSheetConfig.JUMP] = {
                 frames: [
                     offset + 2
-                ]
+                ],
+                next: animal + "_" + SpriteSheetConfig.JUMP
             };
-            data.animations[animal.id + "_" + SpriteSheetConfig.LAND] = {
+            data.animations[animal + "_" + SpriteSheetConfig.LAND] = {
                 frames: [
                     offset + 3,
                     offset + 4
-                ]
+                ],
+                next: animal + "_" + SpriteSheetConfig.IDLE
             };
         }
         this.CHARACTER = data;

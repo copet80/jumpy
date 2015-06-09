@@ -102,15 +102,15 @@ define([
         this._type = value;
         switch (this._type) {
             case Platform.TYPE_CENTER:
-                this.sprite.gotoAndStop(Math.random() < 0.5 ? 0 : 1);
+                this.sprite.gotoAndStop((Math.rand ? Math.rand() : Math.random()) < 0.5 ? 0 : 1);
                 break;
 
             case Platform.TYPE_RIGHT:
-                this.sprite.gotoAndStop(Math.random() < 0.5 ? 2 : 3);
+                this.sprite.gotoAndStop((Math.rand ? Math.rand() : Math.random()) < 0.5 ? 2 : 3);
                 break;
 
             case Platform.TYPE_LEFT:
-                this.sprite.gotoAndStop(Math.random() < 0.5 ? 4 : 5);
+                this.sprite.gotoAndStop((Math.rand ? Math.rand() : Math.random()) < 0.5 ? 4 : 5);
                 break;
         }
     });

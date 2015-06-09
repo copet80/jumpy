@@ -73,7 +73,7 @@ define([
      * Successful jump animation duration.
      * @type {boolean}
      */
-    GameConfig.JUMP_SUCCESS_DURATION = 100;
+    GameConfig.JUMP_SUCCESS_DURATION = 250;
 
     /**
      * Failed jump animation duration.

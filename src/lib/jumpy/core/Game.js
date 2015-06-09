@@ -55,6 +55,13 @@ define([
 
     /**
      * @private
+     * The character that the player is controlling.
+     * @type {Character}
+     */
+    Game.prototype._myCharacter = null;
+
+    /**
+     * @private
      * Dictionary of characters keyed by character ID.
      * @type {object}
      */
@@ -217,8 +224,8 @@ define([
     Game.prototype.init = function() {
         this._initContainers();
         this._initBackdrop();
-        this._initCharacters();
         this._initPlatforms();
+        this._initCharacters();
 
         // delay invalidate so to make sure all assets are loaded with correct dimensions
         setTimeout.call(this, this.invalidate, GameConfig.INVALIDATE_DELAY);
@@ -276,17 +283,74 @@ define([
         this._sky.update(this._currentStep);
         this._treeTrunk.update(this._currentStep);
         this._platforms.update(this._currentStep);
+
+        var i = this._characters.length;
+        while (--i >= 0) {
+            this._characters[i].update();
+        }
     };
 
     /**
      * Jumps to a particular step.
      */
     Game.prototype.jumpTo = function(step) {
-        createjs.Tween.get(this).to({
+        createjs.Tween.get(this, {
+            onChange: function(event) {
+                this._myCharacter.y = this._myCharacter.y0 - Math.sin(event.currentTarget.position / GameConfig.JUMP_SUCCESS_DURATION * Math.PI) * GameConfig.CHARACTER_SPRITE_HEIGHT;
+                this._myCharacter.update();
+            }.bind(this)
+        }).to({
             _currentStep: step
         }, GameConfig.JUMP_SUCCESS_DURATION, createjs.Ease.sineInOut);
+
+        var targetX = this._getRandomPositionOnPlatform(this._platforms.getNextPlatform().type);
+        this._myCharacter.jump();
+        this._myCharacter.clip.scaleX = targetX < this._myCharacter.x ? -1 : 1;
+        this._myCharacter.update();
+        createjs.Tween.get(this._myCharacter)
+            .to({
+                x: targetX
+            }, GameConfig.JUMP_SUCCESS_DURATION, createjs.Ease.sineOut)
+            .call(function() {
+                this._myCharacter.y = this._myCharacter.y0;
+                this._myCharacter.update();
+                this._myCharacter.idle();
+            }.bind(this));
     };
 
+    /**
+     * Adds a character into the game.
+     * @param {Character} character Character to add.
+     */
+    Game.prototype.addCharacter = function(character) {
+        if (character && !this._charactersById[character.id]) {
+            this._characters.push(character);
+            this._charactersById[character.id] = character;
+            this._charactersContainer.addChild(character.clip);
+        }
+    };
+
+    /**
+     * Removes a character into the game.
+     * @param {string} id ID of the character to remove.
+     */
+    Game.prototype.removeCharacterById = function(id) {
+        if (id && this._charactersById[id]) {
+            var i = this._characters.length;
+            while (--i >= 0) {
+                if (this._characters[i].id === id) {
+                    this._characters.splice(i, 1);
+                    break;
+                }
+            }
+            this._charactersContainer.removeChild(this._charactersById[id].clip);
+            delete this._charactersById[id];
+        }
+    };
+
+    // ===========================================
+    //  Private Methods
+    // ===========================================
     /**
      * @private
      * Initializes graphics containers.
@@ -324,8 +388,6 @@ define([
     Game.prototype._initPlatforms = function() {
         this._platforms = new PlatformGroup();
         this._platformsContainer.addChild(this._platforms.clip);
-
-        // TODO
     };
 
     /**
@@ -333,10 +395,41 @@ define([
      * Initializes characters.
      */
     Game.prototype._initCharacters = function() {
-        this._characters = {};
+        this._characters = [];
         this._charactersById = {};
+        this._myCharacter = new Character('myCharacter');
+        this._myCharacter.animalId = GameConfig.ANIMALS[Math.floor(Math.random() * GameConfig.ANIMALS.length)];
 
-        // TODO
+        this._myCharacter.x = this._getRandomPositionOnPlatform(this._platforms.getCurrentPlatform().type);
+        this._myCharacter.y = GameConfig.VIEWPORT_HEIGHT - Platform.SPRITE_HEIGHT * 0.72;
+        this._myCharacter.y0 = this._myCharacter.y;
+        this._myCharacter.update();
+        this._myCharacter.idle();
+        this.addCharacter(this._myCharacter);
+    };
+
+    /**
+     * @private
+     * Gets random X position based on platform type.
+     *
+     * @param {number} platformType Platform type.
+     * @returns {number} X coordinate.
+     */
+    Game.prototype._getRandomPositionOnPlatform = function(platformType) {
+        switch (platformType) {
+            case Platform.TYPE_LEFT:
+                return GameConfig.CHARACTER_SPRITE_WIDTH +
+                       (Math.random() * (GameConfig.VIEWPORT_WIDTH - GameConfig.CHARACTER_SPRITE_WIDTH) * 0.25);
+
+            case Platform.TYPE_CENTER:
+                return (GameConfig.VIEWPORT_WIDTH - GameConfig.CHARACTER_SPRITE_WIDTH) * 0.375 +
+                       (Math.random() * (GameConfig.VIEWPORT_WIDTH * 0.25 - GameConfig.CHARACTER_SPRITE_WIDTH));
+
+            case Platform.TYPE_RIGHT:
+                return (GameConfig.VIEWPORT_WIDTH - GameConfig.CHARACTER_SPRITE_WIDTH) * 0.75 +
+                       (Math.random() * (GameConfig.VIEWPORT_WIDTH * 0.25 - GameConfig.CHARACTER_SPRITE_WIDTH));
+        }
+        return 0;
     };
 
     /**
@@ -420,7 +513,7 @@ define([
         }
 
         var jumpSuccess = false;
-        var nextPlatformType = this._platforms.getPlatformType(this._platformIndex + 1);
+        var nextPlatformType = this._platforms.getNextPlatform().type;
         switch (event.keyCode) {
             // LEFT key
             case 37:
@@ -455,14 +548,6 @@ define([
         if (!self.isActive) return;
         if (self._isPaused) return;
 
-        // TODO
-    }
-
-    /**
-     * @private
-     */
-    function onCharacterJump(event) {
-        var character = event.currentTarget;
         // TODO
     }
 
