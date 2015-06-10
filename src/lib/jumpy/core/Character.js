@@ -95,7 +95,6 @@ define([
      * Invalidates the character.
      */
     Character.prototype.invalidate = function() {
-        this.sprite.stop();
     };
 
     // ===========================================

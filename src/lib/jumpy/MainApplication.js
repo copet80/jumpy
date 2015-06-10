@@ -204,11 +204,11 @@ define([
         __hudScreen.clip.visible = false;
         __hudScreen.reset();
         __game.clip.visible = true;
-        __game.resume();
+        __game.pause();
 
         __soundManager.stopSounds();
         if (!__soundManager.isPlayingMusic(SoundDictionary.MUSIC_TITLE)) {
-            //__soundManager.playMusic(SoundDictionary.MUSIC_TITLE);
+            __soundManager.playMusic(SoundDictionary.MUSIC_TITLE);
         }
     }
 
@@ -264,7 +264,9 @@ define([
      * @private
      */
     function onTitleScreenPlayClick(event) {
-        // TODO
+        __titleScreen.clip.visible = false;
+        __game.resume();
+        __soundManager.playMusic(SoundDictionary.MUSIC_BACKGROUND);
     }
 
     /**

@@ -275,7 +275,6 @@ define([
      */
     Game.prototype.update = function(deltaTime) {
         if (!this.clip.visible) return;
-        if (this._isPaused) return;
 
         if (this._currentStep < 0) {
             this._currentStep = 0;
@@ -498,9 +497,9 @@ define([
         return SoundManager.getInstance().playSpatialSound(
             soundId,
             x,
-            y,
+            GameConfig.VIEWPORT_HALF_HEIGHT,
             GameConfig.VIEWPORT_HALF_WIDTH,
-            -this._containerY + GameConfig.VIEWPORT_HALF_HEIGHT,
+            GameConfig.VIEWPORT_HALF_HEIGHT,
             loop
         );
     };
@@ -512,13 +511,17 @@ define([
      * @param {Character} character Character to play the attack sound for.
      */
     Game.prototype._playJumpSound = function(character) {
-        this._playSound(SoundDictionary.SOUND_JUMP, character.x, character.y, loop);
+        this._playSound(SoundDictionary.SOUND_JUMP, character.x, character.y);
     };
 
     /**
      * Handles document key down.
      */
     Game.prototype.handleDocumentKeyDown = function(event) {
+        if (this._isPaused) {
+            return;
+        }
+
         // ignore if still jumping
         if (createjs.Tween.hasActiveTweens(this)) {
             return;
@@ -536,6 +539,7 @@ define([
         }
 
         if (jumpSuccess) {
+            this._playJumpSound(this._myCharacter);
             this.jumpToPlatform(this._myCharacter, ++this._platformIndex);
         }
     };
