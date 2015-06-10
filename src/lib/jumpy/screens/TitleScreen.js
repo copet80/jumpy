@@ -77,6 +77,27 @@ define([
         return success;
     };
 
+    /**
+     * Pauses the screen.
+     */
+    TitleScreen.prototype.pause = function() {
+        createjs.Tween.removeTweens(this._logo);
+        createjs.Tween.removeTweens(this._btnPlay.clip);
+    };
+
+    /**
+     * Resumes the screen.
+     */
+    TitleScreen.prototype.resume = function() {
+        createjs.Tween.get(this._logo, { loop: true })
+            .to({ rotation: 5 }, 1000, createjs.Ease.sineInOut)
+            .to({ rotation: 0 }, 1000, createjs.Ease.sineInOut);
+
+        createjs.Tween.get(this._btnPlay.clip, { loop: true })
+            .to({ scaleX: 1.1, scaleY: 1.1 }, 500, createjs.Ease.sineInOut)
+            .to({ scaleX: 1, scaleY: 1 }, 500, createjs.Ease.sineInOut);
+    };
+
     // ===========================================
     //  Protected Methods
     // ===========================================

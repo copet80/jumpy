@@ -201,6 +201,7 @@ define([
      */
     function showTitleScreen() {
         __titleScreen.clip.visible = true;
+        __titleScreen.resume();
         __hudScreen.clip.visible = false;
         __hudScreen.reset();
         __game.clip.visible = true;
@@ -209,6 +210,22 @@ define([
         __soundManager.stopSounds();
         if (!__soundManager.isPlayingMusic(SoundDictionary.MUSIC_TITLE)) {
             __soundManager.playMusic(SoundDictionary.MUSIC_TITLE);
+        }
+    }
+
+    /**
+     * @private
+     * Show game screen.
+     */
+    function activateGameScreen() {
+        __titleScreen.clip.visible = false;
+        __titleScreen.pause();
+        __hudScreen.clip.visible = true;
+        __hudScreen.reset();
+        __game.resume();
+
+        if (!__soundManager.isPlayingMusic(SoundDictionary.MUSIC_BACKGROUND)) {
+            __soundManager.playMusic(SoundDictionary.MUSIC_BACKGROUND);
         }
     }
 
@@ -264,9 +281,7 @@ define([
      * @private
      */
     function onTitleScreenPlayClick(event) {
-        __titleScreen.clip.visible = false;
-        __game.resume();
-        __soundManager.playMusic(SoundDictionary.MUSIC_BACKGROUND);
+        activateGameScreen();
     }
 
     /**

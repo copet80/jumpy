@@ -299,33 +299,67 @@ define([
         var step = platformIndex * Platform.SPRITE_HEIGHT;
         character.platformIndex = platformIndex;
 
-        createjs.Tween.get(this, {
-            onChange: function(event) {
-                this._myCharacter.ry = this._currentStep;
-                this._myCharacter.y =
-                    this._currentStep -
-                    this._myCharacter.ry +
-                    this._myCharacter.y0 -
-                    Math.sin(event.currentTarget.position / GameConfig.JUMP_SUCCESS_DURATION * Math.PI) *
-                    GameConfig.CHARACTER_SPRITE_HEIGHT * 1.5;
-                this._myCharacter.update();
-            }.bind(this)
-        }).to({
-            _currentStep: step
-        }, GameConfig.JUMP_SUCCESS_DURATION, createjs.Ease.sineInOut);
+        if (character === this._myCharacter) {
+            createjs.Tween.get(this).to({
+                _currentStep: step
+            }, GameConfig.JUMP_SUCCESS_DURATION, createjs.Ease.sineInOut);
+        }
 
         var targetX = this._getRandomPositionOnPlatform(this._platforms.getPlatformType(this._platformIndex));
-        this._myCharacter.jump();
-        this._myCharacter.clip.scaleX = targetX < this._myCharacter.x ? -1 : 1;
-        this._myCharacter.update();
-        createjs.Tween.get(this._myCharacter)
+        character.jump();
+        character.clip.scaleX = targetX < character.x ? -1 : 1;
+        character.update();
+        createjs.Tween.get(character, {
+                onChange: function(event) {
+                    character.ry = this._currentStep;
+                    character.y =
+                        this._currentStep -
+                        character.ry +
+                        character.y0 -
+                        Math.sin(event.currentTarget.position / GameConfig.JUMP_SUCCESS_DURATION * Math.PI) *
+                        GameConfig.CHARACTER_SPRITE_HEIGHT * 1.5;
+                    character.update();
+                }.bind(this)
+            })
             .to({
                 x: targetX
             }, GameConfig.JUMP_SUCCESS_DURATION, createjs.Ease.sineOut)
             .call(function() {
-                this._myCharacter.y = this._myCharacter.y0;
-                this._myCharacter.update();
-                this._myCharacter.idle();
+                character.y = character.y0;
+                character.update();
+                character.idle();
+            }.bind(this));
+    };
+
+    /**
+     * Plays jump missed sequence.
+     *
+     * @param {Character} character Character to make jump for.
+     */
+    Game.prototype.jumpMissed = function(character) {
+        var targetX = this._getRandomPositionOnPlatform(this._platforms.getPlatformType(this._platformIndex));
+        character.jump();
+        character.clip.scaleX = targetX < character.x ? -1 : 1;
+        character.update();
+        createjs.Tween.get(character, {
+                onChange: function(event) {
+                    character.ry = this._currentStep;
+                    character.y =
+                        this._currentStep -
+                        character.ry +
+                        character.y0 -
+                        Math.sin(event.currentTarget.position / GameConfig.JUMP_FAIL_DURATION * Math.PI) *
+                        GameConfig.CHARACTER_SPRITE_HEIGHT * 3;
+                    character.update();
+                }.bind(this)
+            })
+            .to({
+                x: targetX
+            }, GameConfig.JUMP_FAIL_DURATION, createjs.Ease.sineOut)
+            .call(function() {
+                character.y = character.y0;
+                character.update();
+                character.idle();
             }.bind(this));
     };
 
@@ -523,7 +557,7 @@ define([
         }
 
         // ignore if still jumping
-        if (createjs.Tween.hasActiveTweens(this)) {
+        if (createjs.Tween.hasActiveTweens(this._myCharacter)) {
             return;
         }
 
@@ -541,6 +575,9 @@ define([
         if (jumpSuccess) {
             this._playJumpSound(this._myCharacter);
             this.jumpToPlatform(this._myCharacter, ++this._platformIndex);
+        } else {
+            this._playJumpSound(this._myCharacter);
+            this.jumpMissed(this._myCharacter);
         }
     };
 
