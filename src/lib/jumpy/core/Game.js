@@ -291,19 +291,31 @@ define([
     };
 
     /**
-     * Jumps to a particular step.
+     * Jumps to a particular platform.
+     *
+     * @param {Character} character Character to make jump for.
+     * @param {number} platformIndex Index of the platform to jump to.
      */
-    Game.prototype.jumpTo = function(step) {
+    Game.prototype.jumpToPlatform = function(character, platformIndex) {
+        var step = platformIndex * Platform.SPRITE_HEIGHT;
+        character.platformIndex = platformIndex;
+
         createjs.Tween.get(this, {
             onChange: function(event) {
-                this._myCharacter.y = this._myCharacter.y0 - Math.sin(event.currentTarget.position / GameConfig.JUMP_SUCCESS_DURATION * Math.PI) * GameConfig.CHARACTER_SPRITE_HEIGHT;
+                this._myCharacter.ry = this._currentStep;
+                this._myCharacter.y =
+                    this._currentStep -
+                    this._myCharacter.ry +
+                    this._myCharacter.y0 -
+                    Math.sin(event.currentTarget.position / GameConfig.JUMP_SUCCESS_DURATION * Math.PI) *
+                    GameConfig.CHARACTER_SPRITE_HEIGHT * 1.5;
                 this._myCharacter.update();
             }.bind(this)
         }).to({
             _currentStep: step
         }, GameConfig.JUMP_SUCCESS_DURATION, createjs.Ease.sineInOut);
 
-        var targetX = this._getRandomPositionOnPlatform(this._platforms.getNextPlatform().type);
+        var targetX = this._getRandomPositionOnPlatform(this._platforms.getPlatformType(this._platformIndex));
         this._myCharacter.jump();
         this._myCharacter.clip.scaleX = targetX < this._myCharacter.x ? -1 : 1;
         this._myCharacter.update();
@@ -400,7 +412,7 @@ define([
         this._myCharacter = new Character('myCharacter');
         this._myCharacter.animalId = GameConfig.ANIMALS[Math.floor(Math.random() * GameConfig.ANIMALS.length)];
 
-        this._myCharacter.x = this._getRandomPositionOnPlatform(this._platforms.getCurrentPlatform().type);
+        this._myCharacter.x = this._getRandomPositionOnPlatform(this._platforms.getPlatformType(0));
         this._myCharacter.y = GameConfig.VIEWPORT_HEIGHT - Platform.SPRITE_HEIGHT * 0.72;
         this._myCharacter.y0 = this._myCharacter.y;
         this._myCharacter.update();
@@ -513,26 +525,18 @@ define([
         }
 
         var jumpSuccess = false;
-        var nextPlatformType = this._platforms.getNextPlatform().type;
+        var nextPlatformType = this._platforms.getPlatformType(this._platformIndex + 1);
         switch (event.keyCode) {
             // LEFT key
-            case 37:
-                jumpSuccess = nextPlatformType === Platform.TYPE_LEFT;
-                break;
-
+            case 37: jumpSuccess = nextPlatformType === Platform.TYPE_LEFT; break;
             // UP key
-            case 38:
-                jumpSuccess = nextPlatformType === Platform.TYPE_CENTER;
-                break;
-
+            case 38: jumpSuccess = nextPlatformType === Platform.TYPE_CENTER; break;
             // RIGHT key
-            case 39:
-                jumpSuccess = nextPlatformType === Platform.TYPE_RIGHT;
-                break;
+            case 39: jumpSuccess = nextPlatformType === Platform.TYPE_RIGHT; break;
         }
 
         if (jumpSuccess) {
-            this.jumpTo(++this._platformIndex * Platform.SPRITE_HEIGHT);
+            this.jumpToPlatform(this._myCharacter, ++this._platformIndex);
         }
     };
 

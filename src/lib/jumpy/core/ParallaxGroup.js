@@ -118,9 +118,11 @@ define([
         var scrollValue = this._step * this._speed;
         var i = this._objectsCount;
         var object;
+        var index;
         while (--i >= 0) {
+            index = this._objectsCount - i - 1;
             object = this._objects[i];
-            object.ry = scrollValue + object.spriteHeight * i;
+            object.ry = scrollValue + object.spriteHeight * index;
             object.y = (object.ry % this._boundHeight) - object.spriteHeight;
             if (object.y < -object.spriteHeight) {
                 object.y += this._boundHeight;

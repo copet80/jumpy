@@ -62,27 +62,13 @@ define([
     //  Public Methods
     // ===========================================
     /**
-     * Gets next platform.
-     * @returns {Platform} Platform.
+     * Gets type of the platform based on the platform index.
+     * @param {number} index Platform index.
+     * @returns {number} Platform type.
      */
-    PlatformGroup.prototype.getNextPlatform = function() {
-        var platform = this._objects.filter(function(platform) {
-            return platform.y > GameConfig.VIEWPORT_HEIGHT - Platform.SPRITE_HEIGHT * 2 &&
-                   platform.y < GameConfig.VIEWPORT_HEIGHT - Platform.SPRITE_HEIGHT * 1;
-        })[0];
-        return platform;
-    };
-
-    /**
-     * Gets current platform.
-     * @returns {Platform} Platform.
-     */
-    PlatformGroup.prototype.getCurrentPlatform = function() {
-        var platform = this._objects.filter(function(platform) {
-            return platform.y > GameConfig.VIEWPORT_HEIGHT - Platform.SPRITE_HEIGHT &&
-                   platform.y < GameConfig.VIEWPORT_HEIGHT;
-        })[0];
-        return platform;
+    PlatformGroup.prototype.getPlatformType = function(index) {
+        Math.rand = new Math.seedrandom(this.seed.toString() + index.toString());
+        return Math.floor(Math.rand() * 3);
     };
 
     // ===========================================
@@ -94,8 +80,11 @@ define([
      */
     PlatformGroup.prototype.postObjectUpdate = function(object, index) {
         var pageIndex = Math.floor(object.ry / this._boundHeight);
-        Math.rand = new Math.seedrandom(this.seed.toString() + pageIndex.toString() + index.toString());
-        object.type = Math.floor(Math.rand() * 3);
+        var platformIndex = pageIndex * this._objects.length + index;
+        if (object.index !== platformIndex) {
+            object.index = platformIndex;
+            object.type = this.getPlatformType(platformIndex);
+        }
     };
 
     return PlatformGroup;

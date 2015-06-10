@@ -45,6 +45,16 @@ define([
     Platform.SPRITE_HEIGHT = 160;
 
     // ===========================================
+    //  public Members
+    // ===========================================
+    /**
+     * @private
+     * Current platform index.
+     * @type {string}
+     */
+    Platform.prototype.index = null;
+
+    // ===========================================
     //  Protected Members
     // ===========================================
     /**
@@ -63,7 +73,7 @@ define([
      */
     function Platform() {
         ParallaxObject.call(this);
-        this.pageIndex = 0;
+        this.index = -1;
     }
 
     // Extends the parent class
@@ -124,7 +134,7 @@ define([
      * @return {string} A string representation of this object.
      */
     Platform.prototype.toString = function() {
-        return "[Platform(type:" + this.type + ")]";
+        return "[Platform(index:" + this.index + ", type:" + this.type + ")]";
     };
 
     // ===========================================

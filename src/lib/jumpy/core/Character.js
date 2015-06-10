@@ -30,6 +30,12 @@ define([
      */
     Character.prototype.playerIndicatorRef = null;
 
+    /**
+     * Current platform index.
+     * @type {number}
+     */
+    Character.prototype.platformIndex = 0;
+
     // ===========================================
     //  Protected Members
     // ===========================================
@@ -91,10 +97,6 @@ define([
     Character.prototype.invalidate = function() {
         this.sprite.stop();
     };
-
-    // ===========================================
-    //  Getters / Setters
-    // ===========================================
 
     // ===========================================
     //  Public Methods
