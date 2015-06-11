@@ -47,6 +47,9 @@ define([
         __soundManager.isSoundOn = GameConfig.DEFAULT_SOUND_ON;
         __soundManager.isMusicOn = GameConfig.DEFAULT_MUSIC_ON;
         __connectionManager = ConnectionManager.getInstance();
+        __connectionManager.on(ConnectionManager.CONNECTION_SUCCESS, onConnectionSuccess);
+        __connectionManager.on(ConnectionManager.CONNECTION_ERROR, onConnectionError);
+        __connectionManager.on(ConnectionManager.GAME_START, onGameStart);
         loadAssets();
     }
 
@@ -133,6 +136,7 @@ define([
         __stage.removeChild(__progressBar);
         __stage.removeChild(__progressLabel);
         showTitleScreen();
+        __connectionManager.connect();
     }
 
     /**
@@ -311,6 +315,31 @@ define([
         if (__game) {
             __game.handleDocumentKeyDown(event);
         }
+    }
+
+    /**
+     * @private
+     */
+    function onConnectionSuccess(event) {
+        if (__titleScreen.clip.visible) {
+            __titleScreen.showPlayButton();
+        }
+    }
+
+    /**
+     * @private
+     */
+    function onConnectionError(event) {
+        if (__titleScreen.clip.visible) {
+            __titleScreen.showConnectionError();
+        }
+    }
+
+    /**
+     * @private
+     */
+    function onGameStart(event) {
+        activateGameScreen();
     }
 
     return MainApplication;

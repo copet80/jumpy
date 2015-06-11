@@ -35,6 +35,20 @@ define([
      */
     TitleScreen.prototype._btnPlay = null;
 
+    /**
+     * @private
+     * Connecting message.
+     * @type {createjs.Bitmap}
+     */
+    TitleScreen.prototype._connectingMessage = null;
+
+    /**
+     * @private
+     * Connection error message.
+     * @type {createjs.Bitmap}
+     */
+    TitleScreen.prototype._connectionErrorMessage = null;
+
     // ===========================================
     //  Constructor
     // ===========================================
@@ -70,8 +84,26 @@ define([
             if (!this._btnPlay.invalidate()) {
                 success = false;
             }
-            this._btnPlay.clip.x = GameConfig.VIEWPORT_WIDTH * 0.5;
+            this._btnPlay.clip.x = GameConfig.VIEWPORT_HALF_WIDTH;
             this._btnPlay.clip.y = GameConfig.VIEWPORT_HEIGHT * 0.55;
+        }
+        if (this._connectingMessage) {
+            if (this._connectingMessage.width === 0) {
+                success = false;
+            }
+            this._connectingMessage.regX = this._connectingMessage.image.width * 0.5;
+            this._connectingMessage.regY = this._connectingMessage.image.height * 0.5;
+            this._connectingMessage.x = GameConfig.VIEWPORT_HALF_WIDTH;
+            this._connectingMessage.y = GameConfig.VIEWPORT_HEIGHT * 0.55;
+        }
+        if (this._connectionErrorMessage) {
+            if (this._connectionErrorMessage.width === 0) {
+                success = false;
+            }
+            this._connectionErrorMessage.regX = this._connectionErrorMessage.image.width * 0.5;
+            this._connectionErrorMessage.regY = this._connectionErrorMessage.image.height * 0.5;
+            this._connectionErrorMessage.x = GameConfig.VIEWPORT_HALF_WIDTH;
+            this._connectionErrorMessage.y = GameConfig.VIEWPORT_HEIGHT * 0.55;
         }
 
         return success;
@@ -98,6 +130,24 @@ define([
             .to({ scaleX: 1, scaleY: 1 }, 500, createjs.Ease.sineInOut);
     };
 
+    /**
+     * Shows play button.
+     */
+    TitleScreen.prototype.showPlayButton = function() {
+        this._btnPlay.clip.visible = true;
+        this._connectingMessage.visible = false;
+        this._connectionErrorMessage.visible = false;
+    };
+
+    /**
+     * Shows connection error message.
+     */
+    TitleScreen.prototype.showConnectionError = function() {
+        this._btnPlay.clip.visible = false;
+        this._connectingMessage.visible = false;
+        this._connectionErrorMessage.visible = true;
+    };
+
     // ===========================================
     //  Protected Methods
     // ===========================================
@@ -115,6 +165,16 @@ define([
         this._btnPlay = new Button("btnPlay", SpriteDictionary.BITMAP_PLAY_BUTTON);
         this._btnPlay.ref = this;
         this.clip.addChild(this._btnPlay.clip);
+        this._btnPlay.clip.visible = false;
+
+        // connection error message
+        this._connectingMessage = new createjs.Bitmap(SpriteDictionary.BITMAP_CONNECTING_TEXT);
+        this.clip.addChild(this._connectingMessage);
+
+        // connection error message
+        this._connectionErrorMessage = new createjs.Bitmap(SpriteDictionary.BITMAP_CONNECTION_PROBLEM_TEXT);
+        this.clip.addChild(this._connectionErrorMessage);
+        this._connectionErrorMessage.visible = false;
     };
 
     /**

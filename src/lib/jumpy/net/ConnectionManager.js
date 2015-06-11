@@ -4,12 +4,34 @@
  * @author Anthony Tambrin
  */
 define([
+    "createjs",
     "jumpy/core/GameConfig"
 ], function(createjs, GameConfig) {
     // ===========================================
     //  Singleton
     // ===========================================
     var instance = null;
+
+    // ===========================================
+    //  Event Types
+    // ===========================================
+    /**
+     * Dispatched when connection to admin is successfully established.
+     * @type {string}
+     */
+    ConnectionManager.CONNECTION_SUCCESS = "connectionSuccess";
+
+    /**
+     * Dispatched when there is an error connecting to admin.
+     * @type {string}
+     */
+    ConnectionManager.CONNECTION_ERROR = "connectionError";
+
+    /**
+     * Dispatched when admin says game start.
+     * @type {string}
+     */
+    ConnectionManager.GAME_START = "gameStart";
 
     // ===========================================
     //  Protected Members
@@ -41,8 +63,10 @@ define([
         }
 
         this._peers = [];
-        this._connect();
     }
+
+    // Extends createjs EventDispatcher
+    createjs.EventDispatcher.initialize(ConnectionManager.prototype);
 
     /**
      * Gets singleton instance.
@@ -56,13 +80,12 @@ define([
     };
 
     // ===========================================
-    //  Protected Methods
+    //  Public Methods
     // ===========================================
     /**
-     * @private
      * Connects to the admin peer.
      */
-    ConnectionManager.prototype._connect = function() {
+    ConnectionManager.prototype.connect = function() {
         this._peer = new Peer({
             //key: 'apv9cn0q4669wwmi'
             port: 9999,
@@ -75,6 +98,7 @@ define([
             var adminConn = this._peer.connect('jumpyadmin');
             adminConn.on('open', function() {
                 console.log('[CONNECTION OPEN]');
+                this.dispatchEvent(new createjs.Event(ConnectionManager.CONNECTION_SUCCESS));
             }.bind(this));
             adminConn.on('data', function(data) {
                 console.log('[CONNECTION DATA]', data);
@@ -88,6 +112,7 @@ define([
             }.bind(this));
             adminConn.on('error', function(error) {
                 console.error('[CONNECTION ERROR]', error);
+                this.dispatchEvent(new createjs.Event(ConnectionManager.CONNECTION_ERROR));
             }.bind(this));
         }.bind(this));
         this._peer.on('close', function() {
@@ -98,9 +123,13 @@ define([
         }.bind(this));
         this._peer.on('error', function(error) {
             console.error('[ERROR]', error);
+            this.dispatchEvent(new createjs.Event(ConnectionManager.CONNECTION_ERROR));
         }.bind(this));
     };
 
+    // ===========================================
+    //  Protected Methods
+    // ===========================================
     /**
      * @private
      * Adds a peer into the list.
@@ -134,8 +163,8 @@ define([
      */
     ConnectionManager.prototype._startGame = function(peerIds) {
         if (!peerIds || !peerIds.length) {
-            // TODO: show error on the game client
             console.error('Oops! Error connecting to peers');
+            this.dispatchEvent(new createjs.Event(ConnectionManager.CONNECTION_ERROR));
         } else {
             peerIds.forEach(function(peerId) {
                 var conn = this._peer.connect(peerId);
@@ -154,6 +183,7 @@ define([
                     console.error('[PEER CONNECTION ERROR]', conn, error);
                 }.bind(this));
             }.bind(this));
+            this.dispatchEvent(new createjs.Event(ConnectionManager.GAME_START));
         }
     };
 
