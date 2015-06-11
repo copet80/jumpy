@@ -21,6 +21,12 @@ define([
      */
     MovingObject.prototype.y = null;
 
+    /**
+     * Real Y position.
+     * @type {number}
+     */
+    MovingObject.prototype.ry = null;
+
     // ===========================================
     //  Protected Members
     // ===========================================

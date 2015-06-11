@@ -7,8 +7,9 @@ define([
     "createjs",
     "jumpy/core/GameConfig",
     "jumpy/core/SpriteSheetConfig",
-    "jumpy/sprite/SpriteDictionary"
-], function(createjs, GameConfig, SpriteSheetConfig, SpriteDictionary) {
+    "jumpy/core/MovingObject",
+    "jumpy/core/Platform"
+], function(createjs, GameConfig, SpriteSheetConfig, MovingObject, Platform) {
     // ===========================================
     //  Public Members
     // ===========================================
@@ -31,10 +32,10 @@ define([
     Character.prototype.playerIndicatorRef = null;
 
     /**
-     * Current platform index.
+     * Target platform index.
      * @type {number}
      */
-    Character.prototype.platformIndex = 0;
+    Character.prototype.targetPlatformIndex = 0;
 
     // ===========================================
     //  Protected Members
@@ -67,6 +68,9 @@ define([
         this._initSprite();
     }
 
+    // Extends the parent class
+    Character.prototype = Object.create(MovingObject.prototype);
+
     // Extends createjs EventDispatcher
     createjs.EventDispatcher.initialize(Character.prototype);
 
@@ -86,6 +90,14 @@ define([
     Character.prototype.__defineSetter__("animalId", function(value) {
         this._animalId = value;
         this.animate(this._currentAnimationState);
+    });
+
+    /**
+     * Current platform index based on the current position.
+     * @type {number}
+     */
+    Character.prototype.__defineGetter__("currentPlatformIndex", function() {
+        return Math.floor(this.ry / Platform.SPRITE_HEIGHT);
     });
 
     // ===========================================

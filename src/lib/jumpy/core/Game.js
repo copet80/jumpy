@@ -284,8 +284,12 @@ define([
         this._platforms.update(this._currentStep);
 
         var i = this._characters.length;
+        var character;
         while (--i >= 0) {
-            this._characters[i].update();
+            character = this._characters[i];
+            if (character.targetPlatformIndex > character.currentPlatformIndex) {
+                this.jumpToPlatform(character, character.currentPlatformIndex + 1);
+            }
         }
     };
 
@@ -296,8 +300,10 @@ define([
      * @param {number} platformIndex Index of the platform to jump to.
      */
     Game.prototype.jumpToPlatform = function(character, platformIndex) {
+        if (createjs.Tween.hasActiveTweens(character)) {
+            return;
+        }
         var step = platformIndex * Platform.SPRITE_HEIGHT;
-        character.platformIndex = platformIndex;
 
         if (character === this._myCharacter) {
             createjs.Tween.get(this).to({
@@ -305,12 +311,15 @@ define([
             }, GameConfig.JUMP_SUCCESS_DURATION, createjs.Ease.sineInOut);
         }
 
-        var targetX = this._getRandomPositionOnPlatform(this._platforms.getPlatformType(this._platformIndex));
+        var targetX = this._getRandomPositionOnPlatform(this._platforms.getPlatformType(platformIndex));
         character.jump();
         character.clip.scaleX = targetX < character.x ? -1 : 1;
         character.update();
         createjs.Tween.get(character, {
                 onChange: function(event) {
+                    if (this._currentStep < character.ry) {
+                        return;
+                    }
                     character.ry = this._currentStep;
                     character.y =
                         this._currentStep -
@@ -325,6 +334,7 @@ define([
                 x: targetX
             }, GameConfig.JUMP_SUCCESS_DURATION, createjs.Ease.sineOut)
             .call(function() {
+                character.ry = step;
                 character.y = character.y0;
                 character.update();
                 character.idle();
@@ -561,21 +571,21 @@ define([
             return;
         }
 
-        var jumpSuccess = false;
+        var jumpSuccess = 0;
         var nextPlatformType = this._platforms.getPlatformType(this._platformIndex + 1);
         switch (event.keyCode) {
             // LEFT key
-            case 37: jumpSuccess = nextPlatformType === Platform.TYPE_LEFT; break;
+            case 37: jumpSuccess = nextPlatformType === Platform.TYPE_LEFT ? 1 : 2; break;
             // UP key
-            case 38: jumpSuccess = nextPlatformType === Platform.TYPE_CENTER; break;
+            case 38: jumpSuccess = nextPlatformType === Platform.TYPE_CENTER ? 1 : 2; break;
             // RIGHT key
-            case 39: jumpSuccess = nextPlatformType === Platform.TYPE_RIGHT; break;
+            case 39: jumpSuccess = nextPlatformType === Platform.TYPE_RIGHT ? 1 : 2; break;
         }
 
-        if (jumpSuccess) {
+        if (jumpSuccess === 1) {
             this._playJumpSound(this._myCharacter);
             this.jumpToPlatform(this._myCharacter, ++this._platformIndex);
-        } else {
+        } else if (jumpSuccess === 2) {
             this._playJumpSound(this._myCharacter);
             this.jumpMissed(this._myCharacter);
         }
