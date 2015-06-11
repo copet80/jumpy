@@ -8,13 +8,14 @@ define([
     "jumpy/sprite/SpriteDictionary",
     "jumpy/sound/SoundDictionary",
     "jumpy/sound/SoundManager",
+    "jumpy/net/ConnectionManager",
     "jumpy/screens/TitleScreen",
     "jumpy/screens/HUDScreen",
     "jumpy/core/GameConfig",
     "jumpy/core/Game"
 ], function(
     createjs,
-    SpriteDictionary, SoundDictionary, SoundManager,
+    SpriteDictionary, SoundDictionary, SoundManager, ConnectionManager,
     TitleScreen, HUDScreen,
     GameConfig, Game
 ) {
@@ -29,6 +30,7 @@ define([
     var __stage;
     var __assetsLoader;
     var __soundManager;
+    var __connectionManager;
 
     // ===========================================
     //  Constructor
@@ -44,6 +46,7 @@ define([
         __soundManager = SoundManager.getInstance();
         __soundManager.isSoundOn = GameConfig.DEFAULT_SOUND_ON;
         __soundManager.isMusicOn = GameConfig.DEFAULT_MUSIC_ON;
+        __connectionManager = ConnectionManager.getInstance();
         loadAssets();
     }
 
