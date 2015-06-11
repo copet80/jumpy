@@ -288,7 +288,8 @@ define([
      * @private
      */
     function onTitleScreenPlayClick(event) {
-        activateGameScreen();
+        __connectionManager.join();
+        __titleScreen.showWaiting();
     }
 
     /**

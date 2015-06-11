@@ -38,6 +38,13 @@ define([
     // ===========================================
     /**
      * @private
+     * Admin peer.
+     * @type {Peer}
+     */
+    ConnectionManager.prototype._admin = null;
+
+    /**
+     * @private
      * Peer client.
      * @type {Peer}
      */
@@ -96,6 +103,7 @@ define([
             console.log('[OPEN] Peer ID: ' + id);
 
             var adminConn = this._peer.connect('jumpyadmin');
+            this._admin = adminConn;
             adminConn.on('open', function() {
                 console.log('[CONNECTION OPEN]');
                 this.dispatchEvent(new createjs.Event(ConnectionManager.CONNECTION_SUCCESS));
@@ -109,6 +117,7 @@ define([
             }.bind(this));
             adminConn.on('close', function() {
                 console.log('[CONNECTION CLOSE]');
+                this.dispatchEvent(new createjs.Event(ConnectionManager.CONNECTION_ERROR));
             }.bind(this));
             adminConn.on('error', function(error) {
                 console.error('[CONNECTION ERROR]', error);
@@ -125,6 +134,15 @@ define([
             console.error('[ERROR]', error);
             this.dispatchEvent(new createjs.Event(ConnectionManager.CONNECTION_ERROR));
         }.bind(this));
+    };
+
+    /**
+     * States to the server the intention to join the currently open game session.
+     */
+    ConnectionManager.prototype.join = function() {
+        this._admin.send({
+            action: 'join'
+        });
     };
 
     // ===========================================

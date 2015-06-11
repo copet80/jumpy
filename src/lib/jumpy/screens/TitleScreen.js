@@ -49,6 +49,13 @@ define([
      */
     TitleScreen.prototype._connectionErrorMessage = null;
 
+    /**
+     * @private
+     * Waiting message.
+     * @type {createjs.Bitmap}
+     */
+    TitleScreen.prototype._waitingMessage = null;
+
     // ===========================================
     //  Constructor
     // ===========================================
@@ -105,6 +112,15 @@ define([
             this._connectionErrorMessage.x = GameConfig.VIEWPORT_HALF_WIDTH;
             this._connectionErrorMessage.y = GameConfig.VIEWPORT_HEIGHT * 0.55;
         }
+        if (this._waitingMessage) {
+            if (this._waitingMessage.width === 0) {
+                success = false;
+            }
+            this._waitingMessage.regX = this._waitingMessage.image.width * 0.5;
+            this._waitingMessage.regY = this._waitingMessage.image.height * 0.5;
+            this._waitingMessage.x = GameConfig.VIEWPORT_HALF_WIDTH;
+            this._waitingMessage.y = GameConfig.VIEWPORT_HEIGHT * 0.55;
+        }
 
         return success;
     };
@@ -137,6 +153,7 @@ define([
         this._btnPlay.clip.visible = true;
         this._connectingMessage.visible = false;
         this._connectionErrorMessage.visible = false;
+        this._waitingMessage.visible = false;
     };
 
     /**
@@ -146,6 +163,17 @@ define([
         this._btnPlay.clip.visible = false;
         this._connectingMessage.visible = false;
         this._connectionErrorMessage.visible = true;
+        this._waitingMessage.visible = false;
+    };
+
+    /**
+     * Shows connection error message.
+     */
+    TitleScreen.prototype.showWaiting = function() {
+        this._btnPlay.clip.visible = false;
+        this._connectingMessage.visible = false;
+        this._connectionErrorMessage.visible = false;
+        this._waitingMessage.visible = true;
     };
 
     // ===========================================
@@ -164,17 +192,22 @@ define([
         // start button
         this._btnPlay = new Button("btnPlay", SpriteDictionary.BITMAP_PLAY_BUTTON);
         this._btnPlay.ref = this;
-        this.clip.addChild(this._btnPlay.clip);
         this._btnPlay.clip.visible = false;
+        this.clip.addChild(this._btnPlay.clip);
 
-        // connection error message
+        // connecting message
         this._connectingMessage = new createjs.Bitmap(SpriteDictionary.BITMAP_CONNECTING_TEXT);
         this.clip.addChild(this._connectingMessage);
 
         // connection error message
         this._connectionErrorMessage = new createjs.Bitmap(SpriteDictionary.BITMAP_CONNECTION_PROBLEM_TEXT);
-        this.clip.addChild(this._connectionErrorMessage);
         this._connectionErrorMessage.visible = false;
+        this.clip.addChild(this._connectionErrorMessage);
+
+        // waiting message
+        this._waitingMessage = new createjs.Bitmap(SpriteDictionary.BITMAP_WAITING_TEXT);
+        this._waitingMessage.visible = false;
+        this.clip.addChild(this._waitingMessage);
     };
 
     /**

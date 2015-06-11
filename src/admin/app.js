@@ -31,7 +31,7 @@
             $('#num-players').text(peers.length);
             $('#players-list tbody').html(
                 peers.length ? '' :
-                    '<tr><td colspan="3">No players yet.</td></tr>'
+                    '<tr><td colspan="5">No players yet.</td></tr>'
             );
             if (peers.length > 0) {
                 peers.forEach(function(peerConn, index) {
@@ -39,6 +39,8 @@
                         '<td>' + (index + 1) + '</td>' +
                         '<td>' + peerConn.peer + '</td>' +
                         '<td>' + peerConn._peerBrowser + '</td>' +
+                        '<td>' + peerConn.status + '</td>' +
+                        '<td>' + peerConn.score + '</td>' +
                         '</tr>');
                     $('#players-list tbody').append(row);
                 });
@@ -91,6 +93,8 @@
          * @param {DataConnection} conn
          */
         function addPeer(conn) {
+            conn.status = 'idle';
+            conn.score = '?';
             peers.push(conn);
             if (peers.length <= 2) {
                 countDownStartTime = new Date().getTime();
@@ -135,6 +139,12 @@
             });
             conn.on('data', function(data) {
                 console.log('[CONNECTION DATA]', data);
+                switch (data.action) {
+                    case 'join':
+                        conn.status = 'joining';
+                        updatePeersList();
+                        break;
+                }
             });
             conn.on('close', function() {
                 console.log('[CONNECTION CLOSE]');
