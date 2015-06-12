@@ -6,9 +6,8 @@
 define([
     "createjs",
     "jumpy/core/GameConfig",
-    "jumpy/sprite/SpriteDictionary",
-    "jumpy/core/Character"
-], function(createjs, GameConfig, SpriteDictionary, Character) {
+    "jumpy/sprite/SpriteDictionary"
+], function(createjs, GameConfig, SpriteDictionary) {
     // ===========================================
     //  Public Constants
     // ===========================================

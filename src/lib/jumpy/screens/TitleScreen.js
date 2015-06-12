@@ -7,8 +7,9 @@ define([
     "./BaseScreen",
     "jumpy/core/GameConfig",
     "jumpy/sprite/SpriteDictionary",
-    "jumpy/controls/Button"
-], function(BaseScreen, GameConfig, SpriteDictionary, Button) {
+    "jumpy/controls/Button",
+    "jumpy/core/Countdown"
+], function(BaseScreen, GameConfig, SpriteDictionary, Button, Countdown) {
     // ===========================================
     //  Event Types
     // ===========================================
@@ -55,6 +56,20 @@ define([
      * @type {createjs.Bitmap}
      */
     TitleScreen.prototype._waitingMessage = null;
+
+    /**
+     * @private
+     * Starting game message.
+     * @type {createjs.Bitmap}
+     */
+    TitleScreen.prototype._startingMessage = null
+
+    /**
+     * @private
+     * Countdown counter.
+     * @type {Countdown}
+     */
+    TitleScreen.prototype._countdown = null;
 
     // ===========================================
     //  Constructor
@@ -121,6 +136,15 @@ define([
             this._waitingMessage.x = GameConfig.VIEWPORT_HALF_WIDTH;
             this._waitingMessage.y = GameConfig.VIEWPORT_HEIGHT * 0.55;
         }
+        if (this._startingMessage) {
+            if (this._startingMessage.width === 0) {
+                success = false;
+            }
+            this._startingMessage.regX = this._startingMessage.image.width * 0.5;
+            this._startingMessage.regY = this._startingMessage.image.height * 0.5;
+            this._startingMessage.x = GameConfig.VIEWPORT_HALF_WIDTH;
+            this._startingMessage.y = GameConfig.VIEWPORT_HEIGHT * 0.55;
+        }
 
         return success;
     };
@@ -154,6 +178,7 @@ define([
         this._connectingMessage.visible = false;
         this._connectionErrorMessage.visible = false;
         this._waitingMessage.visible = false;
+        this._startingMessage.visible = false;
     };
 
     /**
@@ -164,6 +189,7 @@ define([
         this._connectingMessage.visible = false;
         this._connectionErrorMessage.visible = true;
         this._waitingMessage.visible = false;
+        this._startingMessage.visible = false;
     };
 
     /**
@@ -174,6 +200,18 @@ define([
         this._connectingMessage.visible = false;
         this._connectionErrorMessage.visible = false;
         this._waitingMessage.visible = true;
+        this._startingMessage.visible = false;
+    };
+
+    /**
+     * Shows connection error message.
+     */
+    TitleScreen.prototype.showStarting = function() {
+        this._btnPlay.clip.visible = false;
+        this._connectingMessage.visible = false;
+        this._connectionErrorMessage.visible = false;
+        this._waitingMessage.visible = false;
+        this._startingMessage.visible = true;
     };
 
     // ===========================================
@@ -208,6 +246,11 @@ define([
         this._waitingMessage = new createjs.Bitmap(SpriteDictionary.BITMAP_WAITING_TEXT);
         this._waitingMessage.visible = false;
         this.clip.addChild(this._waitingMessage);
+
+        // starting message
+        this._startingMessage = new createjs.Bitmap(SpriteDictionary.BITMAP_STARTING_TEXT);
+        this._startingMessage.visible = false;
+        this.clip.addChild(this._startingMessage);
     };
 
     /**

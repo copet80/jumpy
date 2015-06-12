@@ -200,6 +200,7 @@ define([
      * Initialize sprite animation.
      */
     Character.prototype._initSprite = function() {
+        console.log(SpriteSheetConfig);
         // character sprite
         var data = SpriteSheetConfig.getInstance().CHARACTER;
 
