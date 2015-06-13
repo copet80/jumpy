@@ -50,6 +50,8 @@ define([
         __connectionManager.on(ConnectionManager.CONNECTION_SUCCESS, onConnectionSuccess);
         __connectionManager.on(ConnectionManager.CONNECTION_ERROR, onConnectionError);
         __connectionManager.on(ConnectionManager.GAME_START, onGameStart);
+        __connectionManager.on(ConnectionManager.GAME_START_TIME_RECEIVED, onGameStartTimeReceived);
+        __connectionManager.on(ConnectionManager.WAIT_FOR_OTHERS, onWaitForOthers);
         loadAssets();
     }
 
@@ -260,6 +262,9 @@ define([
         if (!__game.isPaused) {
             __game.update(event.delta);
         }
+        if (__titleScreen.clip.visible) {
+            __titleScreen.update();
+        }
         __stage.update(event);
     }
 
@@ -341,6 +346,26 @@ define([
      */
     function onGameStart(event) {
         activateGameScreen();
+    }
+
+    /**
+     * @private
+     */
+    function onGameStartTimeReceived(event) {
+        if (__titleScreen.clip.visible) {
+            __titleScreen.gameStartTime = __connectionManager.gameStartTime;
+            __titleScreen.timeDiff = __connectionManager.timeDiff;
+            __titleScreen.showStarting();
+        }
+    }
+
+    /**
+     * @private
+     */
+    function onWaitForOthers(event) {
+        if (__titleScreen.clip.visible) {
+            __titleScreen.showWaiting();
+        }
     }
 
     return MainApplication;

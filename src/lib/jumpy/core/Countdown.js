@@ -6,9 +6,9 @@
 define([
     "createjs",
     "jumpy/core/GameConfig",
-    "jumpy/core/SpriteSheetConfig",
-    "jumpy/core/MovingObject"
-], function(createjs, GameConfig, SpriteSheetConfig, MovingObject) {
+    "jumpy/core/MovingObject",
+    "jumpy/sprite/SpriteDictionary"
+], function(createjs, GameConfig, MovingObject, SpriteDictionary) {
 
     // ===========================================
     //  Private Constants
@@ -89,6 +89,12 @@ define([
     Countdown.prototype.__defineSetter__("value", function(value) {
         if (value < 0) value = 0;
         else if (value > 99) value = 99;
+        if (this._value !== value) {
+            createjs.Tween.removeTweens(this.clip);
+            this.clip.scaleX = this.clip.scaleY = 2;
+            createjs.Tween.get(this.clip)
+                .to({ scaleX: 1, scaleY: 1 }, 400, createjs.Ease.sineOut);
+        }
         this._value = value;
         this.sprite.gotoAndStop(this._value);
     });
@@ -100,6 +106,15 @@ define([
      * Invalidates the character.
      */
     Countdown.prototype.invalidate = function() {
+        var success = true;
+
+        if (this.sprite) {
+            if (this.sprite.width === 0) {
+                success = false;
+            }
+        }
+
+        return success;
     };
 
     // ===========================================

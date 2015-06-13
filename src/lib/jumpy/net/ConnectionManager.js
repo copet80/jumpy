@@ -33,6 +33,40 @@ define([
      */
     ConnectionManager.GAME_START = "gameStart";
 
+    /**
+     * Dispatched when admin sends game start time.
+     * @type {string}
+     */
+    ConnectionManager.GAME_START_TIME_RECEIVED = "gameStartTimeReceived";
+
+    /**
+     * Dispatched when admin sends wait.
+     * @type {string}
+     */
+    ConnectionManager.WAIT_FOR_OTHERS = "waitForOthers";
+
+    // ===========================================
+    //  Public Members
+    // ===========================================
+    /**
+     * The time when the next game session will start in milliseconds. This is used only for showing countdown
+     * and not to determine when the game actually starts. The admin will mandate the actual start action.
+     * @type {number}
+     */
+    ConnectionManager.prototype.gameStartTime = null;
+
+    /**
+     * The time shared across all client.
+     * @type {number}
+     */
+    ConnectionManager.prototype.globalTime = null;
+
+    /**
+     * The difference between global time and client time.
+     * @type {number}
+     */
+    ConnectionManager.prototype.timeDiff = null;
+
     // ===========================================
     //  Protected Members
     // ===========================================
@@ -111,8 +145,21 @@ define([
             adminConn.on('data', function(data) {
                 console.log('[CONNECTION DATA]', data);
                 // disconnect from admin, connect to peers and start game
-                if (data.action === 'start') {
-                    this._startGame(data.peerIds);
+                switch (data.action) {
+                    case 'start':
+                        this._startGame(data.peerIds);
+                        break;
+
+                    case 'startTime':
+                        this.gameStartTime = data.startTime;
+                        this.globalTime = data.globalTime;
+                        this.timeDiff = new Date().getTime() - this.globalTime;
+                        this.dispatchEvent(new createjs.Event(ConnectionManager.GAME_START_TIME_RECEIVED));
+                        break;
+
+                    case 'wait':
+                        this.dispatchEvent(new createjs.Event(ConnectionManager.WAIT_FOR_OTHERS));
+                        break;
                 }
             }.bind(this));
             adminConn.on('close', function() {

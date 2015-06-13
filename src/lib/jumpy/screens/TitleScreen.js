@@ -20,6 +20,22 @@ define([
     TitleScreen.PLAY_CLICK = "playClick";
 
     // ===========================================
+    //  Public Members
+    // ===========================================
+    /**
+     * The time when the next game session will start in milliseconds. This is used only for showing countdown
+     * and not to determine when the game actually starts. The admin will mandate the actual start action.
+     * @type {number}
+     */
+    TitleScreen.prototype.gameStartTime = null;
+
+    /**
+     * The difference between global time and client time.
+     * @type {number}
+     */
+    TitleScreen.prototype.timeDiff = null;
+
+    // ===========================================
     //  Protected Members
     // ===========================================
     /**
@@ -62,7 +78,7 @@ define([
      * Starting game message.
      * @type {createjs.Bitmap}
      */
-    TitleScreen.prototype._startingMessage = null
+    TitleScreen.prototype._startingMessage = null;
 
     /**
      * @private
@@ -70,6 +86,13 @@ define([
      * @type {Countdown}
      */
     TitleScreen.prototype._countdown = null;
+
+    /**
+     * @private
+     * Game state, paused or not.
+     * @type {boolean}
+     */
+    TitleScreen.prototype._isPaused = null;
 
     // ===========================================
     //  Constructor
@@ -145,6 +168,13 @@ define([
             this._startingMessage.x = GameConfig.VIEWPORT_HALF_WIDTH;
             this._startingMessage.y = GameConfig.VIEWPORT_HEIGHT * 0.55;
         }
+        if (this._countdown) {
+            if (!this._countdown.invalidate()) {
+                success = false;
+            }
+            this._countdown.clip.x = GameConfig.VIEWPORT_HALF_WIDTH;
+            this._countdown.clip.y = GameConfig.VIEWPORT_HEIGHT * 0.66;
+        }
 
         return success;
     };
@@ -153,6 +183,7 @@ define([
      * Pauses the screen.
      */
     TitleScreen.prototype.pause = function() {
+        this._isPaused = true;
         createjs.Tween.removeTweens(this._logo);
         createjs.Tween.removeTweens(this._btnPlay.clip);
     };
@@ -161,6 +192,8 @@ define([
      * Resumes the screen.
      */
     TitleScreen.prototype.resume = function() {
+        this._isPaused = false;
+
         createjs.Tween.get(this._logo, { loop: true })
             .to({ rotation: 5 }, 1000, createjs.Ease.sineInOut)
             .to({ rotation: 0 }, 1000, createjs.Ease.sineInOut);
@@ -179,6 +212,7 @@ define([
         this._connectionErrorMessage.visible = false;
         this._waitingMessage.visible = false;
         this._startingMessage.visible = false;
+        this._countdown.clip.visible = false;
     };
 
     /**
@@ -190,10 +224,11 @@ define([
         this._connectionErrorMessage.visible = true;
         this._waitingMessage.visible = false;
         this._startingMessage.visible = false;
+        this._countdown.clip.visible = false;
     };
 
     /**
-     * Shows connection error message.
+     * Shows waiting for other players message.
      */
     TitleScreen.prototype.showWaiting = function() {
         this._btnPlay.clip.visible = false;
@@ -201,10 +236,11 @@ define([
         this._connectionErrorMessage.visible = false;
         this._waitingMessage.visible = true;
         this._startingMessage.visible = false;
+        this._countdown.clip.visible = false;
     };
 
     /**
-     * Shows connection error message.
+     * Shows starting game message.
      */
     TitleScreen.prototype.showStarting = function() {
         this._btnPlay.clip.visible = false;
@@ -212,6 +248,21 @@ define([
         this._connectionErrorMessage.visible = false;
         this._waitingMessage.visible = false;
         this._startingMessage.visible = true;
+        this._countdown.clip.visible = true;
+    };
+
+    /**
+     * Main loop logic.
+     */
+    TitleScreen.prototype.update = function() {
+        if (this._isPaused) {
+            return;
+        }
+
+        if (typeof(this.gameStartTime) !== 'undefined' && !isNaN(this.gameStartTime)) {
+            var now = new Date().getTime() + this.timeDiff;
+            this._countdown.value = Math.floor((this.gameStartTime - now) * 0.001);
+        }
     };
 
     // ===========================================
@@ -251,6 +302,11 @@ define([
         this._startingMessage = new createjs.Bitmap(SpriteDictionary.BITMAP_STARTING_TEXT);
         this._startingMessage.visible = false;
         this.clip.addChild(this._startingMessage);
+
+        // countdown counter
+        this._countdown = new Countdown();
+        this._countdown.clip.visible = false;
+        this.clip.addChild(this._countdown.clip);
     };
 
     /**

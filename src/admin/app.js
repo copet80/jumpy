@@ -13,16 +13,28 @@
         var STATUS_JOINING = 'joining';
 
         /**
+         * Peer is just waiting to start the game.
+         * @type {string}
+         */
+        var STATUS_STARTING = 'starting';
+
+        /**
          * Peer is playing a game.
          * @type {string}
          */
         var STATUS_PLAYING = 'playing';
 
         /**
-         * How many seconds before game starts.
+         * How many milliseconds before game starts.
          * @type {number}
          */
-        var COUNTDOWN_TIME = 10;
+        var COUNTDOWN_TIME = 10000;
+
+        /**
+         * How many milliseconds before game ends.
+         * @type {number}
+         */
+        var PLAY_TIME = 60000;
 
         /**
          * Countdown start time.
@@ -55,6 +67,12 @@
         var tablesByGameId = {};
 
         /**
+         * List of end times by game ID.
+         * @type {object}
+         */
+        var endTimesByGameId = {};
+
+        /**
          * Updates peer list on the page.
          */
         function updatePeersList() {
@@ -69,17 +87,22 @@
                         '<td>' + peerConn.peer + '</td>' +
                         '<td>' + peerConn._peerBrowser + '</td>' +
                         '<td>' + peerConn.status + '</td>' +
-                        '<td>' + peerConn.score + '</td>' +
                         '</tr>');
                     $('#players-list tbody').append(row);
                 });
             }
+        }
+
+        /**
+         * Updates games list on the page.
+         */
+        function updateGamesList() {
             if (peersByGameId) {
                 Object.keys(peersByGameId).forEach(function(gameId) {
                     var peers = peersByGameId[gameId];
                     var table = tablesByGameId[gameId];
                     if (!table) {
-                        table = $('<table class="table table-condensed table-bordered game">' +
+                        table = $('<table id="' + gameId + '" class="table table-condensed table-bordered game">' +
                             '<thead>' +
                             '<tr>' +
                             '<th colspan="4">' +
@@ -99,14 +122,49 @@
                             '</tbody>' +
                             '</table>');
                         tablesByGameId[gameId] = table;
+                        $('#games-list').append(table);
                     }
                     table.find('tbody').html(
                         peers.length ? '' : '<tr><td colspan="4">No players yet.</td></tr>'
                     );
-                    peers.forEach(function(peer) {
+                    peers.sort(function(a, b) {
+                        if (a.score > b.score) return -1;
+                        else if (a.score < b.score) return 1;
+                        return 0;
+                    });
+                    peers.forEach(function(peerConn, index) {
+                        var row = $('<tr id="' + peerConn.peer + '">' +
+                            '<td>' + (index + 1) + '</td>' +
+                            '<td>' + peerConn.peer + '</td>' +
+                            '<td>' + peerConn._peerBrowser + '</td>' +
+                            '<td class="score">' + peerConn.score + '</td>' +
+                            '</tr>');
+                        table.find('tbody').append(row);
                     });
                 });
             }
+        }
+
+        /**
+         * Refreshes game remaining times.
+         */
+        function refreshGameRemainingTimes() {
+            if (endTimesByGameId) {
+                Object.keys(endTimesByGameId).forEach(function(gameId) {
+                    var endTime = endTimesByGameId[gameId];
+                    var countdown = Math.floor((endTime - new Date().getTime()) * 0.001);
+                    $('#games-list #' + gameId + ' .time').text(countdown);
+                });
+            }
+            requestAnimationFrame(refreshGameRemainingTimes);
+        }
+
+        /**
+         * Updates score on peer.
+         * @param {DataConnection} peerConn
+         */
+        function updateScore(peerConn) {
+            $('#games-list #' + peerConn.peer + ' .score').text(peerConn.score);
         }
 
         /**
@@ -117,7 +175,10 @@
             countdownStartTime = -1;
             peersInQueue = [];
             peersByGameId = {};
+            endTimesByGameId = {};
             updatePeersList();
+            updateGamesList();
+            refreshGameRemainingTimes();
         }
 
         /**
@@ -155,17 +216,35 @@
          * Updates game countdown counter.
          */
         function updateCountDown() {
-            if (getPeersByStatus(STATUS_JOINING).length >= 2) {
+            var joiningPeers = getPeersByStatus(STATUS_JOINING);
+            var startingPeers = getPeersByStatus(STATUS_STARTING);
+
+            if (joiningPeers.length >= 2 || startingPeers.length >= 2) {
+                resetCountdown();
+                joiningPeers.forEach(function(peerConn) {
+                    if (peerConn.status === STATUS_JOINING) {
+                        peerConn.status = STATUS_STARTING;
+                        peerConn.send({
+                            action: 'startTime',
+                            startTime: countdownStartTime + COUNTDOWN_TIME,
+                            globalTime: new Date().getTime()
+                        });
+                    }
+                });
+            }
+
+            if (startingPeers.length >= 2) {
                 var now = new Date().getTime();
-                var secs = COUNTDOWN_TIME - Math.floor((now - countdownStartTime) * 0.001);
+                var secs = Math.floor((COUNTDOWN_TIME - (now - countdownStartTime)) * 0.001);
                 $('#countdown').text(secs);
+
                 if (currentCountDownSeconds !== secs) {
                     currentCountDownSeconds = secs;
 
                     // start game when countdown reaches 0, and remove the peer
                     var gameId = new Date().getTime();
                     if (secs <= 0) {
-                        var peersClone = getPeersByStatus(STATUS_JOINING).concat();
+                        var peersClone = getPeersByStatus(STATUS_STARTING).concat();
                         // remove these peers from the queue
                         removePeersFromQueueById(peersClone.map(function(peer) { return peer.peer; }));
                         peersClone.forEach(function(peer) {
@@ -173,19 +252,31 @@
                                 peersByGameId[gameId] = [];
                             }
                             peersByGameId[gameId].push(peer);
+                            endTimesByGameId[gameId] = new Date().getTime() + PLAY_TIME;
                             peer.status = STATUS_PLAYING;
                             peer.send({
                                 action: 'start',
+                                endTime: endTimesByGameId[gameId],
                                 peerIds: peersClone.map(function(peer) { return peer.peer; })
                             });
                         });
                         updatePeersList();
+                        updateGamesList();
                         resetCountdown();
                     }
                 }
             } else {
                 countdownStartTime = -1;
                 $('#countdown').text('... waiting for at least 2 players');
+
+                startingPeers.forEach(function(peerConn) {
+                    if (peerConn.status === STATUS_STARTING) {
+                        peerConn.status = STATUS_JOINING;
+                        peerConn.send({
+                            action: 'wait'
+                        });
+                    }
+                });
             }
             requestAnimationFrame(updateCountDown);
         }
@@ -196,7 +287,7 @@
          */
         function addPeer(conn) {
             conn.status = STATUS_IDLE;
-            conn.score = '?';
+            conn.score = '0';
             peersInQueue.push(conn);
         }
 
