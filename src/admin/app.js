@@ -303,16 +303,17 @@
             var i = peersInQueue.length;
             while (--i >= 0) {
                 if (peersInQueue[i].peer === conn.peer) {
-                    peersInQueue.splice(i, 1)[0].destroy();
+                    peersInQueue.splice(i, 1);
                     break;
                 }
             }
             Object.keys(peersByGameId).forEach(function(gameId) {
                 var peers = peersByGameId[gameId];
                 var i = peers.length;
+                var peerToDestroy;
                 while (--i >= 0) {
                     if (peers[i].peer === conn.peer) {
-                        peers.splice(i, 1)[0].destroy();
+                        peers.splice(i, 1);
                         break;
                     }
                 }

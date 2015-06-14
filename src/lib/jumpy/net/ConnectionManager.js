@@ -257,6 +257,7 @@ define([
         if (this._peers.filter(function(peerConn) { return peerConn.peer === conn.peer; }).length === 0) {
             this._peers.push(conn);
 
+            console.log(conn);
             conn.on('open', function() {
                 console.log('[PEER CONNECTION OPEN]', conn);
                 conn.send({
@@ -335,7 +336,9 @@ define([
             this.dispatchEvent(new createjs.Event(ConnectionManager.CONNECTION_ERROR));
         } else {
             peerIds.forEach(function(peerId) {
-                this._addPeer(this._peer.connect(peerId));
+                if (peerId !== this._peer.peer) {
+                    this._addPeer(this._peer.connect(peerId));
+                }
             }.bind(this));
             this.dispatchEvent(new createjs.Event(ConnectionManager.GAME_START));
         }
