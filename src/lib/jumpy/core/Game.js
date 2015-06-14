@@ -168,7 +168,6 @@ define([
         this._platformIndex = 0;
         this._stage = stage;
         this._stage.ref = this;
-        this._currentAnimalId = GameConfig.ANIMALS[0];
     }
 
     // Extends createjs EventDispatcher
@@ -206,13 +205,13 @@ define([
      * @type {string}
      */
     Game.prototype.__defineGetter__("currentAnimalId", function() {
-        return this._currentAnimalId;
+        return this._myCharacter.animalId;
     });
     /**
      * @private
      */
     Game.prototype.__defineSetter__("currentAnimalId", function(value) {
-        this._currentAnimalId = value;
+        this._myCharacter.animalId = value;
     });
 
     // ===========================================

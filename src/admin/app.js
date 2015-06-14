@@ -88,7 +88,7 @@
                         '<td>' + peerConn._peerBrowser + '</td>' +
                         '<td>' + peerConn.status + '</td>' +
                         '</tr>');
-                    $('#players-list tbody').append(row);
+                    $('#players-list .queue tbody').append(row);
                 });
             }
         }
@@ -124,23 +124,27 @@
                         tablesByGameId[gameId] = table;
                         $('#games-list').append(table);
                     }
-                    table.find('tbody').html(
-                        peers.length ? '' : '<tr><td colspan="4">No players yet.</td></tr>'
-                    );
-                    peers.sort(function(a, b) {
-                        if (a.score > b.score) return -1;
-                        else if (a.score < b.score) return 1;
-                        return 0;
-                    });
-                    peers.forEach(function(peerConn, index) {
-                        var row = $('<tr id="' + peerConn.peer + '">' +
-                            '<td>' + (index + 1) + '</td>' +
-                            '<td>' + peerConn.peer + '</td>' +
-                            '<td>' + peerConn._peerBrowser + '</td>' +
-                            '<td class="score">' + peerConn.score + '</td>' +
-                            '</tr>');
-                        table.find('tbody').append(row);
-                    });
+                    if (peers.length === 0) {
+                        table.remove();
+                    } else {
+                        table.find('tbody').html(
+                            peers.length ? '' : '<tr><td colspan="4">No players yet.</td></tr>'
+                        );
+                        peers.sort(function(a, b) {
+                            if (a.score > b.score) return -1;
+                            else if (a.score < b.score) return 1;
+                            return 0;
+                        });
+                        peers.forEach(function(peerConn, index) {
+                            var row = $('<tr id="' + peerConn.peer + '">' +
+                                '<td>' + (index + 1) + '</td>' +
+                                '<td>' + peerConn.peer + '</td>' +
+                                '<td>' + peerConn._peerBrowser + '</td>' +
+                                '<td class="score">' + peerConn.score + '</td>' +
+                                '</tr>');
+                            table.find('tbody').append(row);
+                        });
+                    }
                 });
             }
         }
@@ -299,10 +303,20 @@
             var i = peersInQueue.length;
             while (--i >= 0) {
                 if (peersInQueue[i].peer === conn.peer) {
-                    peersInQueue.splice(i, 1);
+                    peersInQueue.splice(i, 1)[0].destroy();
                     break;
                 }
             }
+            Object.keys(peersByGameId).forEach(function(gameId) {
+                var peers = peersByGameId[gameId];
+                var i = peers.length;
+                while (--i >= 0) {
+                    if (peers[i].peer === conn.peer) {
+                        peers.splice(i, 1)[0].destroy();
+                        break;
+                    }
+                }
+            });
         }
 
         /**
@@ -335,15 +349,24 @@
                         resetCountdown();
                         updatePeersList();
                         break;
+
+                    case 'score':
+                        conn.score = data.score;
+                        updateScore(conn);
+                        break;
                 }
             });
             conn.on('close', function() {
                 console.log('[CONNECTION CLOSE]');
                 removePeer(conn);
                 updatePeersList();
+                updateGamesList();
             });
             conn.on('error', function(error) {
                 console.error('[CONNECTION ERROR]', error);
+                removePeer(conn);
+                updatePeersList();
+                updateGamesList();
             });
         });
         peer.on('close', function() {

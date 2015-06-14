@@ -45,6 +45,24 @@ define([
      */
     ConnectionManager.WAIT_FOR_OTHERS = "waitForOthers";
 
+    /**
+     * Dispatched when peer is added.
+     * @type {string}
+     */
+    ConnectionManager.PEER_ADD = "peerAdd";
+
+    /**
+     * Dispatched when peer is removed.
+     * @type {string}
+     */
+    ConnectionManager.PEER_REMOVE = "peerRemove";
+
+    /**
+     * Dispatched when peer jumps to a platform.
+     * @type {string}
+     */
+    ConnectionManager.PEER_PLATFORM = "peerPlatform";
+
     // ===========================================
     //  Public Members
     // ===========================================
@@ -66,6 +84,12 @@ define([
      * @type {number}
      */
     ConnectionManager.prototype.timeDiff = null;
+
+    /**
+     * Currently selected animal Id.
+     * @type {string}
+     */
+    ConnectionManager.prototype.animalId = null;
 
     // ===========================================
     //  Protected Members
@@ -135,7 +159,6 @@ define([
 
         this._peer.on('open', function(id) {
             console.log('[OPEN] Peer ID: ' + id);
-
             var adminConn = this._peer.connect('jumpyadmin');
             this._admin = adminConn;
             adminConn.on('open', function() {
@@ -171,6 +194,9 @@ define([
                 this.dispatchEvent(new createjs.Event(ConnectionManager.CONNECTION_ERROR));
             }.bind(this));
         }.bind(this));
+        this._peer.on('connection', function(conn) {
+            this._addPeer(conn);
+        }.bind(this));
         this._peer.on('close', function() {
             console.log('[CLOSE]');
         }.bind(this));
@@ -192,6 +218,32 @@ define([
         });
     };
 
+    /**
+     * Tells everyone else the current platform index.
+     *
+     * @param {number} platformIndex
+     */
+    ConnectionManager.prototype.updatePlatformIndex = function(platformIndex) {
+        this._peers.forEach(function(peerConn) {
+            peerConn.send({
+                action: 'platform',
+                platformIndex: platformIndex
+            });
+        });
+    };
+
+    /**
+     * Tells the admin the current score.
+     *
+     * @param {number} score
+     */
+    ConnectionManager.prototype.updateScore = function(score) {
+        this._admin.send({
+            action: 'score',
+            score: score
+        });
+    };
+
     // ===========================================
     //  Protected Methods
     // ===========================================
@@ -202,7 +254,43 @@ define([
      * @param {DataConnection} conn Peer connection to add.
      */
     ConnectionManager.prototype._addPeer = function(conn) {
-        this._peers.push(conn);
+        if (this._peers.filter(function(peerConn) { return peerConn.peer === conn.peer; }).length === 0) {
+            this._peers.push(conn);
+
+            conn.on('open', function() {
+                console.log('[PEER CONNECTION OPEN]', conn);
+                conn.send({
+                    action: 'animal',
+                    animalId: this.animalId
+                });
+            }.bind(this));
+            conn.on('data', function(data) {
+                console.log(data);
+                switch (data.action) {
+                    case 'animal':
+                        this.dispatchEvent(new createjs.Event(ConnectionManager.PEER_ADD, {
+                            peerId: conn.peer,
+                            animalId: data.animalId
+                        }));
+                        break;
+
+                    case 'platform':
+                        this.dispatchEvent(new createjs.Event(ConnectionManager.PEER_PLATFORM, {
+                            peerId: conn.peer,
+                            platformIndex: data.platformIndex
+                        }));
+                        break;
+                }
+            }.bind(this));
+            conn.on('close', function() {
+                console.log('[PEER CONNECTION CLOSE]', conn);
+                this._removePeer(conn);
+            }.bind(this));
+            conn.on('error', function(error) {
+                console.error('[PEER CONNECTION ERROR]', conn, error);
+                this._removePeer(conn);
+            }.bind(this));
+        }
     };
 
     /**
@@ -215,9 +303,24 @@ define([
         var i = this._peers.length;
         while (--i >= 0) {
             if (this._peers[i].peer === conn.peer) {
-                this._peers.splice(i, 1);
+                this.dispatchEvent(new createjs.Event(ConnectionManager.PEER_REMOVE, conn.peer));
+                this._peers.splice(i, 1)[0].destroy();
                 break;
             }
+        }
+    };
+
+    /**
+     * @private
+     * Removes all peers from the list.
+     */
+    ConnectionManager.prototype._removeAllPeers = function() {
+        var i = this._peers.length;
+        var conn;
+        while (--i >= 0) {
+            conn = this.pop();
+            this.dispatchEvent(new createjs.Event(ConnectionManager.PEER_REMOVE, conn.peer));
+            conn.destroy();
         }
     };
 
@@ -232,21 +335,7 @@ define([
             this.dispatchEvent(new createjs.Event(ConnectionManager.CONNECTION_ERROR));
         } else {
             peerIds.forEach(function(peerId) {
-                var conn = this._peer.connect(peerId);
-                conn.on('open', function () {
-                    console.log('[PEER CONNECTION OPEN]', conn);
-                    this._addPeer(conn);
-                }.bind(this));
-                conn.on('data', function(data) {
-                    console.log(data);
-                }.bind(this));
-                conn.on('close', function() {
-                    console.log('[PEER CONNECTION CLOSE]', conn);
-                    this._removePeer(conn);
-                }.bind(this));
-                conn.on('error', function(error) {
-                    console.error('[PEER CONNECTION ERROR]', conn, error);
-                }.bind(this));
+                this._addPeer(this._peer.connect(peerId));
             }.bind(this));
             this.dispatchEvent(new createjs.Event(ConnectionManager.GAME_START));
         }

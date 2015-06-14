@@ -52,6 +52,9 @@ define([
         __connectionManager.on(ConnectionManager.GAME_START, onGameStart);
         __connectionManager.on(ConnectionManager.GAME_START_TIME_RECEIVED, onGameStartTimeReceived);
         __connectionManager.on(ConnectionManager.WAIT_FOR_OTHERS, onWaitForOthers);
+        __connectionManager.on(ConnectionManager.PEER_ADD, onPeerAdd);
+        __connectionManager.on(ConnectionManager.PEER_REMOVE, onPeerRemove);
+        __connectionManager.on(ConnectionManager.PEER_PLATFORM, onPeerPlatform);
         loadAssets();
     }
 
@@ -138,6 +141,7 @@ define([
         __stage.removeChild(__progressBar);
         __stage.removeChild(__progressLabel);
         showTitleScreen();
+        __connectionManager.animalId = __game.currentAnimalId;
         __connectionManager.connect();
     }
 
@@ -366,6 +370,27 @@ define([
         if (__titleScreen.clip.visible) {
             __titleScreen.showWaiting();
         }
+    }
+
+    /**
+     * @private
+     */
+    function onPeerAdd(event) {
+        console.log('onPeerAdd', arguments);
+    }
+
+    /**
+     * @private
+     */
+    function onPeerRemove(event) {
+        console.log('onPeerRemove', arguments);
+    }
+
+    /**
+     * @private
+     */
+    function onPeerPlatform(event) {
+        console.log('onPeerPlatform', arguments);
     }
 
     return MainApplication;
