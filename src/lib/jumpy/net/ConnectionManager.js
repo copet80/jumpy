@@ -115,6 +115,20 @@ define([
      */
     ConnectionManager.prototype._peers = null;
 
+    /**
+     * @private
+     * IDs of other peer client who will try to connect to this client.
+     * @type {Peer[]}
+     */
+    ConnectionManager.prototype._incomingPeerIds = null;
+
+    /**
+     * @private
+     * IDs of other peer client who this client will try to connect to.
+     * @type {Peer[]}
+     */
+    ConnectionManager.prototype._outgoingPeerIds = null;
+
     // ===========================================
     //  Constructor
     // ===========================================
@@ -195,7 +209,11 @@ define([
             }.bind(this));
         }.bind(this));
         this._peer.on('connection', function(conn) {
-            this._addPeer(conn);
+            console.log('[PEER CONNECTION]', conn);
+            // only add peer from incoming client
+            if (this._incomingPeerIds.indexOf(conn.peer) >= 0) {
+                this._addPeer(conn);
+            }
         }.bind(this));
         this._peer.on('close', function() {
             console.log('[CLOSE]');
@@ -256,17 +274,12 @@ define([
     ConnectionManager.prototype._addPeer = function(conn) {
         if (this._peers.filter(function(peerConn) { return peerConn.peer === conn.peer; }).length === 0) {
             this._peers.push(conn);
+        }
 
-            console.log(conn);
-            conn.on('open', function() {
-                console.log('[PEER CONNECTION OPEN]', conn);
-                conn.send({
-                    action: 'animal',
-                    animalId: this.animalId
-                });
-            }.bind(this));
+        conn.on('open', function() {
+            console.log('[PEER CONNECTION OPEN]', conn);
             conn.on('data', function(data) {
-                console.log(data);
+                console.log('[PEER CONNECTION DATA]', data);
                 switch (data.action) {
                     case 'animal':
                         this.dispatchEvent(new createjs.Event(ConnectionManager.PEER_ADD, {
@@ -291,7 +304,11 @@ define([
                 console.error('[PEER CONNECTION ERROR]', conn, error);
                 this._removePeer(conn);
             }.bind(this));
-        }
+            conn.send({
+                action: 'animal',
+                animalId: this.animalId
+            });
+        }.bind(this));
     };
 
     /**
@@ -305,7 +322,7 @@ define([
         while (--i >= 0) {
             if (this._peers[i].peer === conn.peer) {
                 this.dispatchEvent(new createjs.Event(ConnectionManager.PEER_REMOVE, conn.peer));
-                this._peers.splice(i, 1)[0].destroy();
+                this._peers.splice(i, 1);
                 break;
             }
         }
@@ -321,7 +338,6 @@ define([
         while (--i >= 0) {
             conn = this.pop();
             this.dispatchEvent(new createjs.Event(ConnectionManager.PEER_REMOVE, conn.peer));
-            conn.destroy();
         }
     };
 
@@ -331,12 +347,24 @@ define([
      * @param {string[]} peerIds Peer IDs connected.
      */
     ConnectionManager.prototype._startGame = function(peerIds) {
+        // self-organise incoming and outgoing peer connections so that peers don't go into a connection race
+        this._outgoingPeerIds = [];
+        this._incomingPeerIds = [];
+        var myPeerIndex = peerIds.indexOf(this._peer.id);
+        peerIds.forEach(function(peerId, index) {
+            if (index < myPeerIndex) {
+                this._incomingPeerIds.push(peerId);
+            } else if (index > myPeerIndex) {
+                this._outgoingPeerIds.push(peerId);
+            }
+        }.bind(this));
+
         if (!peerIds || !peerIds.length) {
             console.error('Oops! Error connecting to peers');
             this.dispatchEvent(new createjs.Event(ConnectionManager.CONNECTION_ERROR));
         } else {
             peerIds.forEach(function(peerId) {
-                if (peerId !== this._peer.peer) {
+                if (this._outgoingPeerIds.indexOf(peerId) >= 0) {
                     this._addPeer(this._peer.connect(peerId));
                 }
             }.bind(this));

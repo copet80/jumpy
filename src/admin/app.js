@@ -343,7 +343,7 @@
                 updatePeersList();
             });
             conn.on('data', function(data) {
-                console.log('[CONNECTION DATA]', data);
+                console.log('[CONNECTION DATA]', data, conn);
                 switch (data.action) {
                     case 'join':
                         conn.status = STATUS_JOINING;
