@@ -23,14 +23,14 @@ define([
     //  Event Types
     // ===========================================
     /**
-     * Dispatched when a character jumps.
+     * Dispatched when my character jumps.
      * @type {string}
      */
-    Game.CHARACTER_JUMP = "characterJump";
+    Game.MY_CHARACTER_JUMP = "myCharacterJump";
 
     // ===========================================
     //  Public Members
-    // ===========================================
+    // =======================================
     /**
      * Clip object to add to the stage.
      * @type {createjs.Container}
@@ -268,6 +268,18 @@ define([
     };
 
     /**
+     * Updates peer's target platform index.
+     * @param {string} peerId Peer ID to update.
+     * @param {number} platformIndex Platform index.
+     */
+    Game.prototype.updateTargetPlatformIndex = function(peerId, platformIndex) {
+        var character = this._charactersById[peerId];
+        if (character) {
+            character.targetPlatformIndex = platformIndex;
+        }
+    };
+
+    /**
      * Main loop logic.
      *
      * @param {number} deltaTime Time passed since last tick.
@@ -286,9 +298,11 @@ define([
         var character;
         while (--i >= 0) {
             character = this._characters[i];
-            if (character.targetPlatformIndex > character.currentPlatformIndex) {
+            if (character !== this._myCharacter && character.targetPlatformIndex > character.currentPlatformIndex) {
                 this.jumpToPlatform(character, character.currentPlatformIndex + 1);
             }
+            character.y = this._currentStep - character.ry + character.y0;
+            character.update();
         }
     };
 
@@ -316,17 +330,12 @@ define([
         character.update();
         createjs.Tween.get(character, {
                 onChange: function(event) {
-                    if (this._currentStep < character.ry) {
+                    if (event.currentTarget.position === GameConfig.JUMP_SUCCESS_DURATION) {
                         return;
                     }
-                    character.ry = this._currentStep;
-                    character.y =
-                        this._currentStep -
-                        character.ry +
-                        character.y0 -
-                        Math.sin(event.currentTarget.position / GameConfig.JUMP_SUCCESS_DURATION * Math.PI) *
-                        GameConfig.CHARACTER_SPRITE_HEIGHT * 1.5;
-                    character.update();
+                    var jumpProgress = event.currentTarget.position / GameConfig.JUMP_SUCCESS_DURATION;
+                    character.ry = ((platformIndex - 1 + jumpProgress) * Platform.SPRITE_HEIGHT) +
+                        (Math.sin(jumpProgress * Math.PI) * GameConfig.CHARACTER_SPRITE_HEIGHT * 2);
                 }.bind(this)
             })
             .to({
@@ -352,14 +361,10 @@ define([
         character.update();
         createjs.Tween.get(character, {
                 onChange: function(event) {
-                    character.ry = this._currentStep;
-                    character.y =
-                        this._currentStep -
-                        character.ry +
-                        character.y0 -
+                    character.ry =
+                        this._currentStep +
                         Math.sin(event.currentTarget.position / GameConfig.JUMP_FAIL_DURATION * Math.PI) *
                         GameConfig.CHARACTER_SPRITE_HEIGHT * 3;
-                    character.update();
                 }.bind(this)
             })
             .to({
@@ -370,6 +375,23 @@ define([
                 character.update();
                 character.idle();
             }.bind(this));
+    };
+
+    /**
+     * Adds a peer into the game.
+     * @param {string} peerId
+     * @param {string} animalId
+     */
+    Game.prototype.addPeer = function(peerId, animalId) {
+        var character = new Character(peerId);
+        character.animalId = animalId;
+        character.x = this._getRandomPositionOnPlatform(this._platforms.getPlatformType(0));
+        character.y = GameConfig.VIEWPORT_HEIGHT - Platform.SPRITE_HEIGHT * 0.72;
+        character.y0 = character.y;
+        character.ry = 0;
+        character.update();
+        character.idle();
+        this.addCharacter(character);
     };
 
     /**
@@ -584,6 +606,11 @@ define([
         if (jumpSuccess === 1) {
             this._playJumpSound(this._myCharacter);
             this.jumpToPlatform(this._myCharacter, ++this._platformIndex);
+
+            var event = new createjs.Event(Game.MY_CHARACTER_JUMP);
+            event.platformIndex = this._platformIndex;
+            event.score = this._platformIndex * Platform.SPRITE_HEIGHT;
+            this.dispatchEvent(event);
         } else if (jumpSuccess === 2) {
             this._playJumpSound(this._myCharacter);
             this.jumpMissed(this._myCharacter);

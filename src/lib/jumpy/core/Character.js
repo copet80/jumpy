@@ -64,7 +64,7 @@ define([
      * @param {string} id Unique ID for this object.
      */
     function Character(id) {
-        if (typeof(id) === "undefined") id = "";
+        MovingObject.call(this, id);
         this._initSprite();
     }
 
@@ -200,7 +200,6 @@ define([
      * Initialize sprite animation.
      */
     Character.prototype._initSprite = function() {
-        console.log(SpriteSheetConfig);
         // character sprite
         var data = SpriteSheetConfig.getInstance().CHARACTER;
 

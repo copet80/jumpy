@@ -110,6 +110,7 @@ define([
         __game = new Game(__stage);
         __stage.addChild(__game.clip);
         __game.clip.visible = false;
+        __game.on(Game.MY_CHARACTER_JUMP, onMyCharacterJump);
 
         __hudScreen = new HUDScreen("hudScreen");
         __stage.addChild(__hudScreen.clip);
@@ -376,21 +377,29 @@ define([
      * @private
      */
     function onPeerAdd(event) {
-        console.log('onPeerAdd', arguments);
+        __game.addPeer(event.peerId, event.animalId);
     }
 
     /**
      * @private
      */
     function onPeerRemove(event) {
-        console.log('onPeerRemove', arguments);
+        __game.removeCharacterById(event.peerId);
     }
 
     /**
      * @private
      */
     function onPeerPlatform(event) {
-        console.log('onPeerPlatform', arguments);
+        __game.updateTargetPlatformIndex(event.peerId, event.platformIndex);
+    }
+
+    /**
+     * @private
+     */
+    function onMyCharacterJump(event) {
+        __connectionManager.updateScore(event.score);
+        __connectionManager.updatePlatformIndex(event.platformIndex);
     }
 
     return MainApplication;

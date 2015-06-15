@@ -272,6 +272,8 @@ define([
      * @param {DataConnection} conn Peer connection to add.
      */
     ConnectionManager.prototype._addPeer = function(conn) {
+        var event;
+
         if (this._peers.filter(function(peerConn) { return peerConn.peer === conn.peer; }).length === 0) {
             this._peers.push(conn);
         }
@@ -282,17 +284,17 @@ define([
                 console.log('[PEER CONNECTION DATA]', data);
                 switch (data.action) {
                     case 'animal':
-                        this.dispatchEvent(new createjs.Event(ConnectionManager.PEER_ADD, {
-                            peerId: conn.peer,
-                            animalId: data.animalId
-                        }));
+                        event = new createjs.Event(ConnectionManager.PEER_ADD);
+                        event.peerId = conn.peer;
+                        event.animalId = data.animalId;
+                        this.dispatchEvent(event);
                         break;
 
                     case 'platform':
-                        this.dispatchEvent(new createjs.Event(ConnectionManager.PEER_PLATFORM, {
-                            peerId: conn.peer,
-                            platformIndex: data.platformIndex
-                        }));
+                        event = new createjs.Event(ConnectionManager.PEER_PLATFORM);
+                        event.peerId = conn.peer;
+                        event.platformIndex = data.platformIndex;
+                        this.dispatchEvent(event);
                         break;
                 }
             }.bind(this));
@@ -318,10 +320,13 @@ define([
      * @param {DataConnection} conn Peer connection to remove.
      */
     ConnectionManager.prototype._removePeer = function(conn) {
+        var event;
         var i = this._peers.length;
         while (--i >= 0) {
             if (this._peers[i].peer === conn.peer) {
-                this.dispatchEvent(new createjs.Event(ConnectionManager.PEER_REMOVE, conn.peer));
+                event = new createjs.Event(ConnectionManager.PEER_REMOVE);
+                event.peerId = conn.peer;
+                this.dispatchEvent(event);
                 this._peers.splice(i, 1);
                 break;
             }
@@ -333,11 +338,14 @@ define([
      * Removes all peers from the list.
      */
     ConnectionManager.prototype._removeAllPeers = function() {
+        var event;
         var i = this._peers.length;
         var conn;
         while (--i >= 0) {
             conn = this.pop();
-            this.dispatchEvent(new createjs.Event(ConnectionManager.PEER_REMOVE, conn.peer));
+            event = new createjs.Event(ConnectionManager.PEER_REMOVE);
+            event.peerId = conn.peer;
+            this.dispatchEvent(event);
         }
     };
 
