@@ -40,6 +40,12 @@ define([
     ConnectionManager.GAME_START_TIME_RECEIVED = "gameStartTimeReceived";
 
     /**
+     * Dispatched when admin sends game end time.
+     * @type {string}
+     */
+    ConnectionManager.GAME_END_TIME_RECEIVED = "gameEndTimeReceived";
+
+    /**
      * Dispatched when admin sends wait.
      * @type {string}
      */
@@ -66,25 +72,6 @@ define([
     // ===========================================
     //  Public Members
     // ===========================================
-    /**
-     * The time when the next game session will start in milliseconds. This is used only for showing countdown
-     * and not to determine when the game actually starts. The admin will mandate the actual start action.
-     * @type {number}
-     */
-    ConnectionManager.prototype.gameStartTime = null;
-
-    /**
-     * The time shared across all client.
-     * @type {number}
-     */
-    ConnectionManager.prototype.globalTime = null;
-
-    /**
-     * The difference between global time and client time.
-     * @type {number}
-     */
-    ConnectionManager.prototype.timeDiff = null;
-
     /**
      * Currently selected animal Id.
      * @type {string}
@@ -181,21 +168,28 @@ define([
             }.bind(this));
             adminConn.on('data', function(data) {
                 console.log('[CONNECTION DATA]', data);
-                // disconnect from admin, connect to peers and start game
+                var event;
                 switch (data.action) {
-                    case 'start':
-                        this._startGame(data.peerIds);
+                    case 'wait':
+                        this.dispatchEvent(new createjs.Event(ConnectionManager.WAIT_FOR_OTHERS));
                         break;
 
                     case 'startTime':
-                        this.gameStartTime = data.startTime;
-                        this.globalTime = data.globalTime;
-                        this.timeDiff = new Date().getTime() - this.globalTime;
-                        this.dispatchEvent(new createjs.Event(ConnectionManager.GAME_START_TIME_RECEIVED));
+                        event = new createjs.Event(ConnectionManager.GAME_START_TIME_RECEIVED);
+                        event.gameStartTime = data.startTime;
+                        event.timeDiff = new Date().getTime() - data.globalTime;
+                        this.dispatchEvent(event);
                         break;
 
-                    case 'wait':
-                        this.dispatchEvent(new createjs.Event(ConnectionManager.WAIT_FOR_OTHERS));
+                    case 'start':
+                        this._startGame(data.peerIds);
+                        event = new createjs.Event(ConnectionManager.GAME_END_TIME_RECEIVED);
+                        event.gameEndTime = data.endTime;
+                        this.dispatchEvent(event);
+                        break;
+
+                    case 'end':
+                        this._endGame(data);
                         break;
                 }
             }.bind(this));
@@ -265,6 +259,20 @@ define([
     // ===========================================
     //  Protected Methods
     // ===========================================
+    /**
+     * Resets the connection state.
+     */
+    ConnectionManager.prototype._reset = function() {
+        if (this._peer) {
+            this._peer.destroy();
+        }
+        this._admin = null;
+        this._peer = null;
+        this._peers = [];
+        this._incomingPeerIds = [];
+        this._outgoingPeerIds = [];
+    };
+
     /**
      * @private
      * Adds a peer into the list.
@@ -378,6 +386,19 @@ define([
             }.bind(this));
             this.dispatchEvent(new createjs.Event(ConnectionManager.GAME_START));
         }
+    };
+
+    /**
+     * Ends the game.
+     *
+     * @param {object} data
+     */
+    ConnectionManager.prototype._endGame = function(data) {
+        this._reset();
+        var event = new createjs.Event(ConnectionManager.GAME_END);
+        event.winner = data.winner;
+        event.rank = data.rank;
+        this.dispatchEvent(event);
     };
 
     return ConnectionManager;

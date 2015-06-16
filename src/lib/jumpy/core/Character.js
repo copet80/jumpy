@@ -8,8 +8,9 @@ define([
     "jumpy/core/GameConfig",
     "jumpy/core/SpriteSheetConfig",
     "jumpy/core/MovingObject",
-    "jumpy/core/Platform"
-], function(createjs, GameConfig, SpriteSheetConfig, MovingObject, Platform) {
+    "jumpy/core/Platform",
+    "jumpy/sprite/SpriteDictionary"
+], function(createjs, GameConfig, SpriteSheetConfig, MovingObject, Platform, SpriteDictionary) {
     // ===========================================
     //  Public Members
     // ===========================================
@@ -37,6 +38,12 @@ define([
      */
     Character.prototype.targetPlatformIndex = 0;
 
+    /**
+     * True if my character, false otherwise.
+     * @type {boolean}
+     */
+    Character.prototype.isMe = false;
+
     // ===========================================
     //  Protected Members
     // ===========================================
@@ -63,7 +70,8 @@ define([
      *
      * @param {string} id Unique ID for this object.
      */
-    function Character(id) {
+    function Character(id, isMe) {
+        this.isMe = isMe;
         MovingObject.call(this, id);
         this._initSprite();
     }
@@ -90,6 +98,20 @@ define([
     Character.prototype.__defineSetter__("animalId", function(value) {
         this._animalId = value;
         this.animate(this._currentAnimationState);
+    });
+
+    /**
+     * Scale X.
+     * @type {number}
+     */
+    Character.prototype.__defineGetter__("scaleX", function() {
+        return this.sprite.scaleX;
+    });
+    /**
+     * @private
+     */
+    Character.prototype.__defineSetter__("scaleX", function(value) {
+        this.sprite.scaleX = value;
     });
 
     /**
@@ -200,15 +222,33 @@ define([
      * Initialize sprite animation.
      */
     Character.prototype._initSprite = function() {
-        // character sprite
-        var data = SpriteSheetConfig.getInstance().CHARACTER;
-
-        this.sprite = new createjs.Sprite(new createjs.SpriteSheet(data));
-        this.sprite.ref = this;
-
         this.clip = new createjs.Container();
         this.clip.mouseEnabled = this.clip.mouseChildren = false;
+
+        // character sprite
+        this.sprite = new createjs.Sprite(new createjs.SpriteSheet(SpriteSheetConfig.getInstance().CHARACTER));
+        this.sprite.ref = this;
         this.clip.addChild(this.sprite);
+
+        // me bubble sprite
+        if (this.isMe) {
+            this.bubbleSprite = new createjs.Sprite(new createjs.SpriteSheet({
+                framerate: 0,
+                images: [
+                    SpriteDictionary.BITMAP_YOU_BUBBLE
+                ],
+                frames: {
+                    width: 77,
+                    height: 47,
+                    regX: 20,
+                    regY: 47
+                },
+                animations: {}
+            }));
+            this.bubbleSprite.x = 15;
+            this.bubbleSprite.y = -GameConfig.CHARACTER_SPRITE_HEIGHT + 5;
+            this.clip.addChild(this.bubbleSprite);
+        }
 
         // delay invalidate so to make sure all assets are loaded with correct dimensions
         setTimeout.call(this, this.invalidate, GameConfig.INVALIDATE_DELAY);

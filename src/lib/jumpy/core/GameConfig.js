@@ -49,13 +49,13 @@ define([
      * Character sprite width.
      * @type {number}
      */
-    GameConfig.CHARACTER_SPRITE_WIDTH = 40;
+    GameConfig.CHARACTER_SPRITE_WIDTH = 44;
 
     /**
      * Character sprite height.
      * @type {number}
      */
-    GameConfig.CHARACTER_SPRITE_HEIGHT = 40;
+    GameConfig.CHARACTER_SPRITE_HEIGHT = 44;
 
     /**
      * Set to true to start game with sound on.

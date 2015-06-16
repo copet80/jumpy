@@ -28,13 +28,13 @@
          * How many milliseconds before game starts.
          * @type {number}
          */
-        var COUNTDOWN_TIME = 10000;
+        var COUNTDOWN_TIME = 5000;
 
         /**
          * How many milliseconds before game ends.
          * @type {number}
          */
-        var PLAY_TIME = 60000;
+        var PLAY_TIME = 10000;
 
         /**
          * Countdown start time.
@@ -71,6 +71,15 @@
          * @type {object}
          */
         var endTimesByGameId = {};
+
+        /**
+         * Sorting function for peers by their score.
+         */
+        function sortPeersByScore(a, b) {
+            if (a.score > b.score) return -1;
+            else if (a.score < b.score) return 1;
+            return 0;
+        }
 
         /**
          * Updates peer list on the page.
@@ -130,11 +139,7 @@
                         table.find('tbody').html(
                             peers.length ? '' : '<tr><td colspan="4">No players yet.</td></tr>'
                         );
-                        peers.sort(function(a, b) {
-                            if (a.score > b.score) return -1;
-                            else if (a.score < b.score) return 1;
-                            return 0;
-                        });
+                        peers.sort(sortPeersByScore);
                         peers.forEach(function(peerConn, index) {
                             var row = $('<tr id="' + peerConn.peer + '">' +
                                 '<td>' + (index + 1) + '</td>' +
@@ -146,6 +151,14 @@
                         });
                     }
                 });
+                // remove game that is already gone
+                $('#games-list table.game').each(function(index, table) {
+                    if (Object.keys(peersByGameId).indexOf($(table).attr('id')) === -1) {
+                        table.remove();
+                    }
+                });
+            } else {
+                $('#games-list').html('');
             }
         }
 
@@ -157,7 +170,23 @@
                 Object.keys(endTimesByGameId).forEach(function(gameId) {
                     var endTime = endTimesByGameId[gameId];
                     var countdown = Math.floor((endTime - new Date().getTime()) * 0.001);
-                    $('#games-list #' + gameId + ' .time').text(countdown);
+                    if (countdown > 0) {
+                        $('#games-list #' + gameId + ' .time').text(countdown);
+                    } else {
+                        // end the game
+                        var peers = peersByGameId[gameId];
+                        peers.sort(sortPeersByScore);
+                        peers.forEach(function(peer, index) {
+                            peer.send({
+                                action: 'end',
+                                winner: peers[0].peer,
+                                rank: index
+                            });
+                        });
+                        delete peersByGameId[gameId];
+                        delete endTimesByGameId[gameId];
+                        updateGamesList();
+                    }
                 });
             }
             requestAnimationFrame(refreshGameRemainingTimes);

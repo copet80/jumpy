@@ -145,11 +145,6 @@ define([
     Game.prototype._backdropContainer = null;
 
     // ===========================================
-    //  Temporary Variables
-    // ===========================================
-    var __character;
-
-    // ===========================================
     //  Constructor
     // ===========================================
     /**
@@ -326,7 +321,7 @@ define([
 
         var targetX = this._getRandomPositionOnPlatform(this._platforms.getPlatformType(platformIndex));
         character.jump();
-        character.clip.scaleX = targetX < character.x ? -1 : 1;
+        character.scaleX = targetX < character.x ? -1 : 1;
         character.update();
         createjs.Tween.get(character, {
                 onChange: function(event) {
@@ -357,7 +352,7 @@ define([
     Game.prototype.jumpMissed = function(character) {
         var targetX = this._getRandomPositionOnPlatform(this._platforms.getPlatformType(this._platformIndex));
         character.jump();
-        character.clip.scaleX = targetX < character.x ? -1 : 1;
+        character.scaleX = targetX < character.x ? -1 : 1;
         character.update();
         createjs.Tween.get(character, {
                 onChange: function(event) {
@@ -473,7 +468,7 @@ define([
     Game.prototype._initCharacters = function() {
         this._characters = [];
         this._charactersById = {};
-        this._myCharacter = new Character('myCharacter');
+        this._myCharacter = new Character('myCharacter', true);
         this._myCharacter.animalId = GameConfig.ANIMALS[Math.floor(Math.random() * GameConfig.ANIMALS.length)];
 
         this._myCharacter.x = this._getRandomPositionOnPlatform(this._platforms.getPlatformType(0));
@@ -584,6 +579,27 @@ define([
      */
     Game.prototype.handleDocumentKeyDown = function(event) {
         if (this._isPaused) {
+            // change character
+            var animalIndex;
+            switch (event.keyCode) {
+                // LEFT key
+                case 37:
+                    animalIndex = GameConfig.ANIMALS.indexOf(this._myCharacter.animalId);
+                    if (--animalIndex < 0) {
+                        animalIndex = GameConfig.ANIMALS.length - 1;
+                    }
+                    this._myCharacter.animalId = GameConfig.ANIMALS[animalIndex];
+                    break;
+
+                // RIGHT key
+                case 39:
+                    animalIndex = GameConfig.ANIMALS.indexOf(this._myCharacter.animalId);
+                    if (++animalIndex >= GameConfig.ANIMALS.length) {
+                        animalIndex = 0;
+                    }
+                    this._myCharacter.animalId = GameConfig.ANIMALS[animalIndex];
+                    break;
+            }
             return;
         }
 

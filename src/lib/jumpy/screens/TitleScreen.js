@@ -6,10 +6,10 @@
 define([
     "./BaseScreen",
     "jumpy/core/GameConfig",
+    "jumpy/core/Countdown",
     "jumpy/sprite/SpriteDictionary",
-    "jumpy/controls/Button",
-    "jumpy/core/Countdown"
-], function(BaseScreen, GameConfig, SpriteDictionary, Button, Countdown) {
+    "jumpy/controls/Button"
+], function(BaseScreen, GameConfig, Countdown, SpriteDictionary, Button) {
     // ===========================================
     //  Event Types
     // ===========================================
@@ -82,6 +82,13 @@ define([
 
     /**
      * @private
+     * Change character message.
+     * @type {createjs.Bitmap}
+     */
+    TitleScreen.prototype._changeCharacterMessage = null;
+
+    /**
+     * @private
      * Countdown counter.
      * @type {Countdown}
      */
@@ -89,7 +96,7 @@ define([
 
     /**
      * @private
-     * Game state, paused or not.
+     * Loop state, paused or not.
      * @type {boolean}
      */
     TitleScreen.prototype._isPaused = null;
@@ -175,8 +182,34 @@ define([
             this._countdown.clip.x = GameConfig.VIEWPORT_HALF_WIDTH;
             this._countdown.clip.y = GameConfig.VIEWPORT_HEIGHT * 0.66;
         }
+        if (this._changeCharacterMessage) {
+            if (this._changeCharacterMessage.width === 0) {
+                success = false;
+            }
+            this._changeCharacterMessage.regX = this._changeCharacterMessage.image.width * 0.5;
+            this._changeCharacterMessage.regY = this._changeCharacterMessage.image.height * 0.5;
+            this._changeCharacterMessage.x = GameConfig.VIEWPORT_HALF_WIDTH;
+            this._changeCharacterMessage.y = GameConfig.VIEWPORT_HEIGHT - this._changeCharacterMessage.image.height - 15;
+        }
 
         return success;
+    };
+
+    /**
+     * Resets the screen.
+     */
+    TitleScreen.prototype.reset = function() {
+        this._btnPlay.clip.visible = false;
+        this._connectingMessage.visible = true;
+        this._connectionErrorMessage.visible = false;
+        this._waitingMessage.visible = false;
+        this._startingMessage.visible = false;
+        this._countdown.clip.visible = false;
+
+        createjs.Tween.removeTweens(this._logo);
+        createjs.Tween.removeTweens(this._btnPlay.clip);
+        this._logo.rotation = 0;
+        this._btnPlay.clip.scaleX = this._btnPlay.clip.scaleY = 1;
     };
 
     /**
@@ -186,6 +219,8 @@ define([
         this._isPaused = true;
         createjs.Tween.removeTweens(this._logo);
         createjs.Tween.removeTweens(this._btnPlay.clip);
+        this._logo.rotation = 0;
+        this._btnPlay.clip.scaleX = this._btnPlay.clip.scaleY = 1;
     };
 
     /**
@@ -193,6 +228,11 @@ define([
      */
     TitleScreen.prototype.resume = function() {
         this._isPaused = false;
+
+        createjs.Tween.removeTweens(this._logo);
+        createjs.Tween.removeTweens(this._btnPlay.clip);
+        this._logo.rotation = 0;
+        this._btnPlay.clip.scaleX = this._btnPlay.clip.scaleY = 1;
 
         createjs.Tween.get(this._logo, { loop: true })
             .to({ rotation: 5 }, 1000, createjs.Ease.sineInOut)
@@ -281,7 +321,6 @@ define([
         // start button
         this._btnPlay = new Button("btnPlay", SpriteDictionary.BITMAP_PLAY_BUTTON);
         this._btnPlay.ref = this;
-        this._btnPlay.clip.visible = false;
         this.clip.addChild(this._btnPlay.clip);
 
         // connecting message
@@ -290,23 +329,25 @@ define([
 
         // connection error message
         this._connectionErrorMessage = new createjs.Bitmap(SpriteDictionary.BITMAP_CONNECTION_PROBLEM_TEXT);
-        this._connectionErrorMessage.visible = false;
         this.clip.addChild(this._connectionErrorMessage);
 
         // waiting message
         this._waitingMessage = new createjs.Bitmap(SpriteDictionary.BITMAP_WAITING_TEXT);
-        this._waitingMessage.visible = false;
         this.clip.addChild(this._waitingMessage);
 
         // starting message
         this._startingMessage = new createjs.Bitmap(SpriteDictionary.BITMAP_STARTING_TEXT);
-        this._startingMessage.visible = false;
         this.clip.addChild(this._startingMessage);
 
         // countdown counter
         this._countdown = new Countdown();
-        this._countdown.clip.visible = false;
         this.clip.addChild(this._countdown.clip);
+
+        // change character message
+        this._changeCharacterMessage = new createjs.Bitmap(SpriteDictionary.BITMAP_CHANGE_CHARACTER_TEXT);
+        this.clip.addChild(this._changeCharacterMessage);
+
+        this.reset();
     };
 
     /**

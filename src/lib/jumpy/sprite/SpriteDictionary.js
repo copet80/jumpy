@@ -19,10 +19,13 @@ define([
     // Bitmaps
     SpriteDictionary.BITMAP_PLAY_BUTTON = "assets/bitmaps/button-play.png";
     SpriteDictionary.BITMAP_LOGO = "assets/bitmaps/logo.png";
+    SpriteDictionary.BITMAP_TIME_TEXT = "assets/bitmaps/text-time.png";
     SpriteDictionary.BITMAP_WAITING_TEXT = "assets/bitmaps/text-waiting.png";
     SpriteDictionary.BITMAP_STARTING_TEXT = "assets/bitmaps/text-starting.png";
     SpriteDictionary.BITMAP_CONNECTING_TEXT = "assets/bitmaps/text-connecting.png";
     SpriteDictionary.BITMAP_CONNECTION_PROBLEM_TEXT = "assets/bitmaps/text-connection-problem.png";
+    SpriteDictionary.BITMAP_CHANGE_CHARACTER_TEXT = "assets/bitmaps/text-change-character.png";
+    SpriteDictionary.BITMAP_YOU_BUBBLE = "assets/bitmaps/you-bubble.png";
 
     SpriteDictionary.SPRITES = [
         SpriteDictionary.SPRITE_CHARACTER,
@@ -35,10 +38,13 @@ define([
     SpriteDictionary.BITMAPS = [
         SpriteDictionary.BITMAP_PLAY_BUTTON,
         SpriteDictionary.BITMAP_LOGO,
+        SpriteDictionary.BITMAP_TIME_TEXT,
         SpriteDictionary.BITMAP_WAITING_TEXT,
         SpriteDictionary.BITMAP_STARTING_TEXT,
         SpriteDictionary.BITMAP_CONNECTING_TEXT,
-        SpriteDictionary.BITMAP_CONNECTION_PROBLEM_TEXT
+        SpriteDictionary.BITMAP_CONNECTION_PROBLEM_TEXT,
+        SpriteDictionary.BITMAP_CHANGE_CHARACTER_TEXT,
+        SpriteDictionary.BITMAP_YOU_BUBBLE
     ];
 
     // ===========================================

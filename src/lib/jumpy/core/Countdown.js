@@ -90,10 +90,14 @@ define([
         if (value < 0) value = 0;
         else if (value > 99) value = 99;
         if (this._value !== value) {
-            createjs.Tween.removeTweens(this.clip);
-            this.clip.scaleX = this.clip.scaleY = 2;
-            createjs.Tween.get(this.clip)
-                .to({ scaleX: 1, scaleY: 1 }, 400, createjs.Ease.sineOut);
+            if (value < 10) {
+                createjs.Tween.removeTweens(this.clip);
+                this.clip.scaleX = this.clip.scaleY = 2;
+                createjs.Tween.get(this.clip)
+                    .to({ scaleX: 1, scaleY: 1 }, 400, createjs.Ease.sineOut);
+            } else {
+                this.clip.scaleX = this.clip.scaleY = 1;
+            }
         }
         this._value = value;
         this.sprite.gotoAndStop(this._value);

@@ -50,7 +50,9 @@ define([
         __connectionManager.on(ConnectionManager.CONNECTION_SUCCESS, onConnectionSuccess);
         __connectionManager.on(ConnectionManager.CONNECTION_ERROR, onConnectionError);
         __connectionManager.on(ConnectionManager.GAME_START, onGameStart);
+        __connectionManager.on(ConnectionManager.GAME_END, onGameEnd);
         __connectionManager.on(ConnectionManager.GAME_START_TIME_RECEIVED, onGameStartTimeReceived);
+        __connectionManager.on(ConnectionManager.GAME_END_TIME_RECEIVED, onGameEndTimeReceived);
         __connectionManager.on(ConnectionManager.WAIT_FOR_OTHERS, onWaitForOthers);
         __connectionManager.on(ConnectionManager.PEER_ADD, onPeerAdd);
         __connectionManager.on(ConnectionManager.PEER_REMOVE, onPeerRemove);
@@ -202,6 +204,7 @@ define([
         __game.resume();
         __titleScreen.clip.visible = false;
         __hudScreen.reset();
+        __hudScreen.pause();
         __hudScreen.clip.visible = true;
         __game.clip.visible = true;
 
@@ -214,10 +217,12 @@ define([
      * Show title screen.
      */
     function showTitleScreen() {
+        __titleScreen.reset();
         __titleScreen.clip.visible = true;
         __titleScreen.resume();
         __hudScreen.clip.visible = false;
         __hudScreen.reset();
+        __hudScreen.pause();
         __game.clip.visible = true;
         __game.pause();
 
@@ -236,6 +241,7 @@ define([
         __titleScreen.pause();
         __hudScreen.clip.visible = true;
         __hudScreen.reset();
+        __hudScreen.resume();
         __game.resume();
 
         if (!__soundManager.isPlayingMusic(SoundDictionary.MUSIC_BACKGROUND)) {
@@ -266,6 +272,9 @@ define([
     function update(event) {
         if (!__game.isPaused) {
             __game.update(event.delta);
+        }
+        if (!__hudScreen.isPaused) {
+            __hudScreen.update(event.delta);
         }
         if (__titleScreen.clip.visible) {
             __titleScreen.update();
@@ -356,12 +365,29 @@ define([
     /**
      * @private
      */
+    function onGameEnd(event) {
+        showTitleScreen();
+        __connectionManager.animalId = __game.currentAnimalId;
+        __connectionManager.connect();
+    }
+
+    /**
+     * @private
+     */
     function onGameStartTimeReceived(event) {
         if (__titleScreen.clip.visible) {
-            __titleScreen.gameStartTime = __connectionManager.gameStartTime;
-            __titleScreen.timeDiff = __connectionManager.timeDiff;
+            __titleScreen.gameStartTime = event.gameStartTime;
+            __titleScreen.timeDiff = event.timeDiff;
             __titleScreen.showStarting();
         }
+        __hudScreen.timeDiff = event.timeDiff;
+    }
+
+    /**
+     * @private
+     */
+    function onGameEndTimeReceived(event) {
+        __hudScreen.gameEndTime = event.gameEndTime;
     }
 
     /**
