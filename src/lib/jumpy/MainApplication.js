@@ -11,12 +11,13 @@ define([
     "jumpy/net/ConnectionManager",
     "jumpy/screens/TitleScreen",
     "jumpy/screens/HUDScreen",
+    "jumpy/screens/EndResultScreen",
     "jumpy/core/GameConfig",
     "jumpy/core/Game"
 ], function(
     createjs,
     SpriteDictionary, SoundDictionary, SoundManager, ConnectionManager,
-    TitleScreen, HUDScreen,
+    TitleScreen, HUDScreen, EndResultScreen,
     GameConfig, Game
 ) {
     // ===========================================
@@ -27,6 +28,7 @@ define([
     var __game;
     var __titleScreen;
     var __hudScreen;
+    var __endResultScreen;
     var __stage;
     var __assetsLoader;
     var __soundManager;
@@ -108,15 +110,23 @@ define([
         __titleScreen.on(TitleScreen.PLAY_CLICK, onTitleScreenPlayClick);
         __titleScreen.clip.visible = false;
 
-        // initialize the game and HUD
+        // initialize the game
         __game = new Game(__stage);
         __stage.addChild(__game.clip);
         __game.clip.visible = false;
         __game.on(Game.MY_CHARACTER_JUMP, onMyCharacterJump);
 
+        // initialize HUD screen
         __hudScreen = new HUDScreen("hudScreen");
         __stage.addChild(__hudScreen.clip);
         __hudScreen.clip.visible = false;
+
+        // initialize end result screen
+        __endResultScreen = new EndResultScreen("endResultScreen");
+        __endResultScreen.on(EndResultScreen.PLAY_CLICK, onEndResultScreenPlayClick);
+        __endResultScreen.on(EndResultScreen.SMASH_SCREEN, onEndResultScreenSmashScreen);
+        __stage.addChild(__endResultScreen.clip);
+        __endResultScreen.clip.visible = false;
 
         // make sure title screen is on top
         __stage.addChild(__titleScreen.clip);
@@ -134,9 +144,11 @@ define([
         var isGameValidated = __game.invalidate();
         var isTitleScreenValidated = __titleScreen.invalidate();
         var isHUDScreenValidated = __hudScreen.invalidate();
+        var isEndResultScreenValidated = __endResultScreen.invalidate();
         if (!isGameValidated
             || !isTitleScreenValidated
-            || !isHUDScreenValidated) {
+            || !isHUDScreenValidated
+            || !isEndResultScreenValidated) {
             setTimeout(ready, GameConfig.INVALIDATE_DELAY);
             return;
         }
@@ -207,6 +219,9 @@ define([
         __hudScreen.pause();
         __hudScreen.clip.visible = true;
         __game.clip.visible = true;
+        __endResultScreen.reset();
+        __endResultScreen.pause();
+        __endResultScreen.clip.visible = false;
 
         __soundManager.stopSounds();
         __soundManager.playMusic(SoundDictionary.MUSIC_BACKGROUND);
@@ -225,6 +240,9 @@ define([
         __hudScreen.pause();
         __game.clip.visible = true;
         __game.pause();
+        __endResultScreen.clip.visible = false;
+        __endResultScreen.reset();
+        __endResultScreen.pause();
 
         __soundManager.stopSounds();
         if (!__soundManager.isPlayingMusic(SoundDictionary.MUSIC_TITLE)) {
@@ -243,9 +261,34 @@ define([
         __hudScreen.reset();
         __hudScreen.resume();
         __game.resume();
+        __endResultScreen.clip.visible = false;
+        __endResultScreen.reset();
+        __endResultScreen.pause();
 
         if (!__soundManager.isPlayingMusic(SoundDictionary.MUSIC_BACKGROUND)) {
             __soundManager.playMusic(SoundDictionary.MUSIC_BACKGROUND);
+        }
+    }
+
+    /**
+     * @private
+     * Show end result screen.
+     * @param {string[]} Peer ID array in order of the ranks.
+     */
+    function showEndResultScreen(ranks) {
+        __titleScreen.clip.visible = false;
+        __titleScreen.pause();
+        __hudScreen.clip.visible = false;
+        __hudScreen.reset();
+        __hudScreen.pause();
+        __game.pause();
+        __endResultScreen.clip.visible = true;
+        __endResultScreen.reset();
+        __endResultScreen.showRanks(__connectionManager.myPeerId, ranks);
+        __endResultScreen.resume();
+
+        if (!__soundManager.isPlayingMusic(SoundDictionary.MUSIC_TITLE)) {
+            __soundManager.playMusic(SoundDictionary.MUSIC_TITLE);
         }
     }
 
@@ -275,6 +318,9 @@ define([
         }
         if (!__hudScreen.isPaused) {
             __hudScreen.update(event.delta);
+        }
+        if (__endResultScreen.clip.visible) {
+            __endResultScreen.update();
         }
         if (__titleScreen.clip.visible) {
             __titleScreen.update();
@@ -314,6 +360,27 @@ define([
     /**
      * @private
      */
+    function onEndResultScreenPlayClick(event) {
+        showTitleScreen();
+        onTitleScreenPlayClick(event);
+    }
+
+    /**
+     * @private
+     */
+    function onEndResultScreenSmashScreen(event) {
+        // shake the game screen
+        __game.shake = 5;
+        createjs.Tween.get(__game).to({ shake: 0 }, 2000, createjs.Ease.sineOut);
+
+        // shake the end result screen
+        __endResultScreen.shake = 5;
+        createjs.Tween.get(__endResultScreen).to({ shake: 0 }, 2000, createjs.Ease.sineOut);
+    }
+
+    /**
+     * @private
+     */
     function onDocumentKeyDown(event) {
         switch (event.keyCode) {
             // ESC key
@@ -343,8 +410,12 @@ define([
     function onConnectionSuccess(event) {
         if (__titleScreen.clip.visible) {
             __titleScreen.showPlayButton();
-        }
-    }
+            showEndResultScreen([
+                '111',
+                '222',
+                __connectionManager.myPeerId
+            ]);
+        }}
 
     /**
      * @private

@@ -146,6 +146,17 @@ define([
     };
 
     // ===========================================
+    //  Getters / Setters
+    // ===========================================
+    /**
+     * Current player's peer ID.
+     * @type {string}
+     */
+    ConnectionManager.prototype.__defineGetter__("myPeerId", function() {
+        return this._peer ? this._peer.id : null;
+    });
+
+    // ===========================================
     //  Public Methods
     // ===========================================
     /**

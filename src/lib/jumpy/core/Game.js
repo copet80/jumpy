@@ -144,6 +144,13 @@ define([
      */
     Game.prototype._backdropContainer = null;
 
+    /**
+     * @private
+     * Shake value (radius distance offset from [0, 0] position).
+     * @type {number}
+     */
+    Game.prototype._shake = 0;
+
     // ===========================================
     //  Constructor
     // ===========================================
@@ -207,6 +214,22 @@ define([
      */
     Game.prototype.__defineSetter__("currentAnimalId", function(value) {
         this._myCharacter.animalId = value;
+    });
+
+    /**
+     * Unique ID of the currently chosen team.
+     * @type {string}
+     */
+    Game.prototype.__defineGetter__("shake", function() {
+        return this._shake;
+    });
+    /**
+     * @private
+     */
+    Game.prototype.__defineSetter__("shake", function(value) {
+        this._shake = value;
+        this.clip.x = this._shake * Math.random();
+        this.clip.y = this._shake * Math.random();
     });
 
     // ===========================================

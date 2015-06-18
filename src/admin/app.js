@@ -176,11 +176,13 @@
                         // end the game
                         var peers = peersByGameId[gameId];
                         peers.sort(sortPeersByScore);
-                        peers.forEach(function(peer, index) {
+                        var ranks = peers.map(function(peerConn) {
+                            return peerConn.peer;
+                        });
+                        peers.forEach(function(peer) {
                             peer.send({
                                 action: 'end',
-                                winner: peers[0].peer,
-                                rank: index
+                                ranks: ranks
                             });
                         });
                         delete peersByGameId[gameId];
