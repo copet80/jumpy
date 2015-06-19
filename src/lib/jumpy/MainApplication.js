@@ -410,11 +410,11 @@ define([
     function onConnectionSuccess(event) {
         if (__titleScreen.clip.visible) {
             __titleScreen.showPlayButton();
-            showEndResultScreen([
+            /*showEndResultScreen([
                 '111',
                 '222',
                 __connectionManager.myPeerId
-            ]);
+            ]);*/
         }}
 
     /**
