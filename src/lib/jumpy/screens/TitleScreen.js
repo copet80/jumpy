@@ -189,7 +189,7 @@ define([
             this._changeCharacterMessage.regX = this._changeCharacterMessage.image.width * 0.5;
             this._changeCharacterMessage.regY = this._changeCharacterMessage.image.height * 0.5;
             this._changeCharacterMessage.x = GameConfig.VIEWPORT_HALF_WIDTH;
-            this._changeCharacterMessage.y = GameConfig.VIEWPORT_HEIGHT - this._changeCharacterMessage.image.height - 15;
+            this._changeCharacterMessage.y = GameConfig.VIEWPORT_HEIGHT - this._changeCharacterMessage.image.height * 0.7;
         }
 
         return success;

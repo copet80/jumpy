@@ -16,13 +16,13 @@ define([
     // ===========================================
     /**
      * Clip object to add to the stage.
-     * @type {createjs.Sprite}
+     * @type {createjs.Container}
      */
     Character.prototype.clip = null;
 
     /**
      * Character sprite container.
-     * @type {createjs.Container}
+     * @type {createjs.Sprite}
      */
     Character.prototype.sprite = null;
 

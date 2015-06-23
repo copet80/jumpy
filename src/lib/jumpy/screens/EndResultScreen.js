@@ -6,21 +6,22 @@
 define([
     "./BaseScreen",
     "jumpy/core/GameConfig",
+    "jumpy/core/SpriteSheetConfig",
     "jumpy/sprite/SpriteDictionary",
     "jumpy/controls/Button"
 ], function(
     BaseScreen,
-    GameConfig,
+    GameConfig, SpriteSheetConfig,
     SpriteDictionary,Button
 ) {
     // ===========================================
     //  Event Types
     // ===========================================
     /**
-     * Dispatched when play button is clicked.
+     * Dispatched when back to title button is clicked.
      * @type {string}
      */
-    EndResultScreen.PLAY_CLICK = "playClick";
+    EndResultScreen.BACK_TO_TITLE_CLICK = "backToTitleClick";
 
     /**
      * Dispatched when 1st, 2nd, or 3rd text landed on the screen.
@@ -33,10 +34,10 @@ define([
     // ===========================================
     /**
      * @private
-     * Play button.
+     * Back to title button.
      * @type {Button}
      */
-    EndResultScreen.prototype._btnPlay = null;
+    EndResultScreen.prototype._btnBackToTitle = null;
 
     /**
      * @private
@@ -44,6 +45,34 @@ define([
      * @type {createjs.Bitmap}
      */
     EndResultScreen.prototype._ranksText = null;
+
+    /**
+     * @private
+     * Container for ranks and characters.
+     * @type {createjs.Container}
+     */
+    EndResultScreen.prototype._ranksClip = null;
+
+    /**
+     * @private
+     * 1st winner character sprite.
+     * @type {createjs.Sprite}
+     */
+    EndResultScreen.prototype._rank1stCharacter = null;
+
+    /**
+     * @private
+     * 2nd winner character sprite.
+     * @type {createjs.Sprite}
+     */
+    EndResultScreen.prototype._rank2ndCharacter = null;
+
+    /**
+     * @private
+     * 3rd winner character sprite.
+     * @type {createjs.Sprite}
+     */
+    EndResultScreen.prototype._rank3rdCharacter = null;
 
     /**
      * @private
@@ -149,12 +178,12 @@ define([
     EndResultScreen.prototype.invalidate = function() {
         var success = BaseScreen.prototype.invalidate.call(this);
 
-        if (this._btnPlay) {
-            if (!this._btnPlay.invalidate()) {
+        if (this._btnBackToTitle) {
+            if (!this._btnBackToTitle.invalidate()) {
                 success = false;
             }
-            this._btnPlay.clip.x = GameConfig.VIEWPORT_HALF_WIDTH;
-            this._btnPlay.clip.y = GameConfig.VIEWPORT_HEIGHT * 0.75;
+            this._btnBackToTitle.clip.x = GameConfig.VIEWPORT_HALF_WIDTH;
+            this._btnBackToTitle.clip.y = GameConfig.VIEWPORT_HEIGHT * 0.75;
         }
         if (this._wellDoneText) {
             if (this._wellDoneText.width === 0) {
@@ -201,6 +230,64 @@ define([
             this._rank3rdText.x = GameConfig.VIEWPORT_HALF_WIDTH;
             this._rank3rdText.y = GameConfig.VIEWPORT_HEIGHT * 0.48;
         }
+        if (this._oopsText) {
+            if (this._oopsText.width === 0) {
+                success = false;
+            }
+            this._oopsText.regX = this._oopsText.image.width * 0.5;
+            this._oopsText.regY = this._oopsText.image.height * 0.5;
+            this._oopsText.x = GameConfig.VIEWPORT_HALF_WIDTH;
+            this._oopsText.y = GameConfig.VIEWPORT_HEIGHT * 0.1;
+        }
+        if (this._betterLuckText) {
+            if (this._betterLuckText.width === 0) {
+                success = false;
+            }
+            this._betterLuckText.regX = this._betterLuckText.image.width * 0.5;
+            this._betterLuckText.regY = this._betterLuckText.image.height * 0.5;
+            this._betterLuckText.x = GameConfig.VIEWPORT_HALF_WIDTH;
+            this._betterLuckText.y = GameConfig.VIEWPORT_HEIGHT * 0.23;
+        }
+        if (this._ranksClip) {
+            this._ranksClip.x = GameConfig.VIEWPORT_HALF_WIDTH;
+            this._ranksClip.y = GameConfig.VIEWPORT_HEIGHT * 0.46;
+        }
+        if (this._ranksText) {
+            if (this._ranksText.width === 0) {
+                success = false;
+            }
+            this._ranksText.regX = this._ranksText.image.width * 0.5;
+            this._ranksText.regY = this._ranksText.image.height * 0.5;
+            this._ranksText.x = this._ranksText.image.width * -0.5;
+            this._ranksText.y = 0;
+        }
+        if (this._rank1stCharacter) {
+            if (this._rank1stCharacter.width === 0) {
+                success = false;
+            }
+            this._rank1stCharacter.regX = GameConfig.CHARACTER_SPRITE_WIDTH * 0.5;
+            this._rank1stCharacter.regY = GameConfig.CHARACTER_SPRITE_HEIGHT * 0.5;
+            this._rank1stCharacter.x = GameConfig.CHARACTER_SPRITE_WIDTH * 0.7;
+            this._rank1stCharacter.y = GameConfig.CHARACTER_SPRITE_HEIGHT * -0.6;
+        }
+        if (this._rank2ndCharacter) {
+            if (this._rank2ndCharacter.width === 0) {
+                success = false;
+            }
+            this._rank2ndCharacter.regX = GameConfig.CHARACTER_SPRITE_WIDTH * 0.5;
+            this._rank2ndCharacter.regY = GameConfig.CHARACTER_SPRITE_HEIGHT * 0.5;
+            this._rank2ndCharacter.x = GameConfig.CHARACTER_SPRITE_WIDTH * 0.7;
+            this._rank2ndCharacter.y = GameConfig.CHARACTER_SPRITE_HEIGHT * 0.7;
+        }
+        if (this._rank3rdCharacter) {
+            if (this._rank3rdCharacter.width === 0) {
+                success = false;
+            }
+            this._rank3rdCharacter.regX = GameConfig.CHARACTER_SPRITE_WIDTH * 0.5;
+            this._rank3rdCharacter.regY = GameConfig.CHARACTER_SPRITE_HEIGHT * 0.5;
+            this._rank3rdCharacter.x = GameConfig.CHARACTER_SPRITE_WIDTH * 0.7;
+            this._rank3rdCharacter.y = GameConfig.CHARACTER_SPRITE_HEIGHT * 2;
+        }
 
         return success;
     };
@@ -209,11 +296,11 @@ define([
      * Resets the states of all elements.
      */
     EndResultScreen.prototype.reset = function() {
-        this._btnPlay.clip.visible = false;
+        this._btnBackToTitle.clip.visible = false;
         this._rank1stText.visible = false;
         this._rank2ndText.visible = false;
         this._rank3rdText.visible = false;
-        this._ranksText.visible = false;
+        this._ranksClip.visible = false;
         this._wellDoneText.visible = false;
         this._youCameText.visible = false;
         this._oopsText.visible = false;
@@ -222,18 +309,18 @@ define([
         createjs.Tween.removeTweens(this._rank1stText);
         createjs.Tween.removeTweens(this._rank2ndText);
         createjs.Tween.removeTweens(this._rank3rdText);
-        createjs.Tween.removeTweens(this._ranksText);
+        createjs.Tween.removeTweens(this._ranksClip);
         createjs.Tween.removeTweens(this._wellDoneText);
         createjs.Tween.removeTweens(this._youCameText);
         createjs.Tween.removeTweens(this._oopsText);
         createjs.Tween.removeTweens(this._betterLuckText);
-        createjs.Tween.removeTweens(this._btnPlay.clip);
+        createjs.Tween.removeTweens(this._btnBackToTitle.clip);
 
-        this._btnPlay.clip.scaleX = this._btnPlay.clip.scaleY = 1;
+        this._btnBackToTitle.clip.scaleX = this._btnBackToTitle.clip.scaleY = 1;
         this._rank1stText.scaleX = this._rank1stText.scaleY = 1;
         this._rank2ndText.scaleX = this._rank2ndText.scaleY = 1;
         this._rank3rdText.scaleX = this._rank3rdText.scaleY = 1;
-        this._ranksText.scaleX = this._ranksText.scaleY = 1;
+        this._ranksClip.scaleX = this._ranksClip.scaleY = 1;
         this._wellDoneText.scaleX = this._wellDoneText.scaleY = 1;
         this._youCameText.scaleX = this._youCameText.scaleY = 1;
         this._oopsText.scaleX = this._oopsText.scaleY = 1;
@@ -246,9 +333,9 @@ define([
     EndResultScreen.prototype.pause = function() {
         this._isPaused = true;
 
-        if (this._btnPlay.clip.visible && !createjs.Tween.hasActiveTweens(this._btnPlay.clip)) {
-            createjs.Tween.removeTweens(this._btnPlay.clip);
-            this._btnPlay.clip.scaleX = this._btnPlay.clip.scaleY = 1;
+        if (this._btnBackToTitle.clip.visible && !createjs.Tween.hasActiveTweens(this._btnBackToTitle.clip)) {
+            createjs.Tween.removeTweens(this._btnBackToTitle.clip);
+            this._btnBackToTitle.clip.scaleX = this._btnBackToTitle.clip.scaleY = 1;
         }
     };
 
@@ -258,10 +345,10 @@ define([
     EndResultScreen.prototype.resume = function() {
         this._isPaused = false;
 
-        if (this._btnPlay.clip.visible && !createjs.Tween.hasActiveTweens(this._btnPlay.clip)) {
-            createjs.Tween.removeTweens(this._btnPlay.clip);
-            this._btnPlay.clip.scaleX = this._btnPlay.clip.scaleY = 1;
-            createjs.Tween.get(this._btnPlay.clip, { loop: true })
+        if (this._btnBackToTitle.clip.visible && !createjs.Tween.hasActiveTweens(this._btnBackToTitle.clip)) {
+            createjs.Tween.removeTweens(this._btnBackToTitle.clip);
+            this._btnBackToTitle.clip.scaleX = this._btnBackToTitle.clip.scaleY = 1;
+            createjs.Tween.get(this._btnBackToTitle.clip, { loop: true })
                 .to({ scaleX: 1.1, scaleY: 1.1 }, 500, createjs.Ease.sineInOut)
                 .to({ scaleX: 1, scaleY: 1 }, 500, createjs.Ease.sineInOut);
         }
@@ -269,16 +356,17 @@ define([
 
     /**
      * Shows win/lose and ranks.
+     * @param {string{}} Animal ID mapping by peer ID.
      * @param {string} myPeerId My peer ID.
      * @param {string[]} Peer ID array in order of the ranks.
      */
-    EndResultScreen.prototype.showRanks = function(myPeerId, ranks) {
+    EndResultScreen.prototype.showRanks = function(animalIdsMapping, myPeerId, ranks) {
         var myRank = ranks.indexOf(myPeerId);
         switch (myRank) {
             case 0: this._showWin1st(); break;
             case 1: this._showWin2nd(); break;
             case 2: this._showWin3rd(); break;
-            default: this._showLose(); break;
+            default: this._showLose(animalIdsMapping, ranks); break;
         }
     };
 
@@ -305,9 +393,9 @@ define([
     EndResultScreen.prototype._initClip = function() {
         BaseScreen.prototype._initClip.call(this);
 
-        this._btnPlay = new Button("btnPlay", SpriteDictionary.BITMAP_PLAY_AGAIN_BUTTON);
-        this._btnPlay.ref = this;
-        this.clip.addChild(this._btnPlay.clip);
+        this._btnBackToTitle = new Button("btnPlay", SpriteDictionary.BITMAP_BACK_TO_TITLE_BUTTON);
+        this._btnBackToTitle.ref = this;
+        this.clip.addChild(this._btnBackToTitle.clip);
 
         this._rank1stText = new createjs.Bitmap(SpriteDictionary.BITMAP_1ST_TEXT);
         this.clip.addChild(this._rank1stText);
@@ -318,8 +406,21 @@ define([
         this._rank3rdText = new createjs.Bitmap(SpriteDictionary.BITMAP_3RD_TEXT);
         this.clip.addChild(this._rank3rdText);
 
+        this._ranksClip = new createjs.Container();
+        this._ranksClip.mouseEnabled = this._ranksClip.mouseChildren = false;
+        this.clip.addChild(this._ranksClip);
+
         this._ranksText = new createjs.Bitmap(SpriteDictionary.BITMAP_1_2_3_TEXT);
-        this.clip.addChild(this._ranksText);
+        this._ranksClip.addChild(this._ranksText);
+
+        this._rank1stCharacter = new createjs.Sprite(new createjs.SpriteSheet(SpriteSheetConfig.getInstance().CHARACTER));
+        this._ranksClip.addChild(this._rank1stCharacter);
+
+        this._rank2ndCharacter = new createjs.Sprite(new createjs.SpriteSheet(SpriteSheetConfig.getInstance().CHARACTER));
+        this._ranksClip.addChild(this._rank2ndCharacter);
+
+        this._rank3rdCharacter = new createjs.Sprite(new createjs.SpriteSheet(SpriteSheetConfig.getInstance().CHARACTER));
+        this._ranksClip.addChild(this._rank3rdCharacter);
 
         this._wellDoneText = new createjs.Bitmap(SpriteDictionary.BITMAP_WELL_DONE_TEXT);
         this.clip.addChild(this._wellDoneText);
@@ -341,7 +442,7 @@ define([
      */
     EndResultScreen.prototype._addListeners = function() {
         BaseScreen.prototype._addListeners.call(this);
-        this._btnPlay.on(Button.CLICK, onPlayButtonClick);
+        this._btnBackToTitle.on(Button.CLICK, onBackToTitleButtonClick);
     };
 
     /**
@@ -372,15 +473,15 @@ define([
                 this.dispatchEvent(new createjs.Event(EndResultScreen.SMASH_SCREEN));
             }.bind(this));
 
-        this._btnPlay.clip.scaleX = this._btnPlay.clip.scaleY = 0;
-        this._btnPlay.clip.visible = true;
-        createjs.Tween.get(this._btnPlay.clip)
+        this._btnBackToTitle.clip.scaleX = this._btnBackToTitle.clip.scaleY = 0;
+        this._btnBackToTitle.clip.visible = true;
+        createjs.Tween.get(this._btnBackToTitle.clip)
             .wait(3000)
             .to({ scaleX: 1, scaleY: 1 }, 1000, createjs.Ease.elasticOut)
             .call(function() {
-                createjs.Tween.removeTweens(this._btnPlay.clip);
-                this._btnPlay.clip.scaleX = this._btnPlay.clip.scaleY = 1;
-                createjs.Tween.get(this._btnPlay.clip, { loop: true })
+                createjs.Tween.removeTweens(this._btnBackToTitle.clip);
+                this._btnBackToTitle.clip.scaleX = this._btnBackToTitle.clip.scaleY = 1;
+                createjs.Tween.get(this._btnBackToTitle.clip, { loop: true })
                     .to({ scaleX: 1.1, scaleY: 1.1 }, 500, createjs.Ease.sineInOut)
                     .to({ scaleX: 1, scaleY: 1 }, 500, createjs.Ease.sineInOut);
             }.bind(this));
@@ -410,8 +511,39 @@ define([
     /**
      * @private
      */
-    EndResultScreen.prototype._showLose = function(ranks) {
-        this._showWin();
+    EndResultScreen.prototype._showLose = function(animalIdsMapping, ranks) {
+        this.reset();
+
+        this._oopsText.scaleX = this._oopsText.scaleY = 0;
+        this._oopsText.visible = true;
+        createjs.Tween.get(this._oopsText)
+            .wait(500)
+            .to({ scaleX: 1, scaleY: 1 }, 500, createjs.Ease.elasticOut);
+
+        this._betterLuckText.scaleX = this._betterLuckText.scaleY = 0;
+        this._betterLuckText.visible = true;
+        createjs.Tween.get(this._betterLuckText)
+            .wait(1000)
+            .to({ scaleX: 1, scaleY: 1 }, 500, createjs.Ease.elasticOut);
+
+        this._ranksClip.scaleX = this._ranksClip.scaleY = 0;
+        this._ranksClip.visible = true;
+        createjs.Tween.get(this._ranksClip)
+            .wait(1500)
+            .to({ scaleX: 1, scaleY: 1 }, 500, createjs.Ease.elasticOut);
+
+        this._btnBackToTitle.clip.scaleX = this._btnBackToTitle.clip.scaleY = 0;
+        this._btnBackToTitle.clip.visible = true;
+        createjs.Tween.get(this._btnBackToTitle.clip)
+            .wait(3000)
+            .to({ scaleX: 1, scaleY: 1 }, 1000, createjs.Ease.elasticOut)
+            .call(function() {
+                createjs.Tween.removeTweens(this._btnBackToTitle.clip);
+                this._btnBackToTitle.clip.scaleX = this._btnBackToTitle.clip.scaleY = 1;
+                createjs.Tween.get(this._btnBackToTitle.clip, { loop: true })
+                    .to({ scaleX: 1.1, scaleY: 1.1 }, 500, createjs.Ease.sineInOut)
+                    .to({ scaleX: 1, scaleY: 1 }, 500, createjs.Ease.sineInOut);
+            }.bind(this));
     };
 
     // ===========================================
@@ -420,8 +552,8 @@ define([
     /**
      * @private
      */
-    function onPlayButtonClick(event) {
-        event.currentTarget.ref.dispatchEvent(new createjs.Event(EndResultScreen.PLAY_CLICK));
+    function onBackToTitleButtonClick(event) {
+        event.currentTarget.ref.dispatchEvent(new createjs.Event(EndResultScreen.BACK_TO_TITLE_CLICK));
     }
 
     return EndResultScreen;

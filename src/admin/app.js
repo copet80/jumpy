@@ -358,8 +358,8 @@
         var peer = new Peer('jumpyadmin', {
             //key: 'apv9cn0q4669wwmi',
             port: 9999,
-            //host: 'localhost'
-            host: 'anthonytdt.objective.com'
+            host: 'localhost'
+            //host: 'anthonytdt.objective.com'
         });
 
         peer.on('open', function(id) {

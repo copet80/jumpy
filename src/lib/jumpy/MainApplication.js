@@ -123,7 +123,7 @@ define([
 
         // initialize end result screen
         __endResultScreen = new EndResultScreen("endResultScreen");
-        __endResultScreen.on(EndResultScreen.PLAY_CLICK, onEndResultScreenPlayClick);
+        __endResultScreen.on(EndResultScreen.BACK_TO_TITLE_CLICK, onEndResultScreenBackToTitleClick);
         __endResultScreen.on(EndResultScreen.SMASH_SCREEN, onEndResultScreenSmashScreen);
         __stage.addChild(__endResultScreen.clip);
         __endResultScreen.clip.visible = false;
@@ -273,9 +273,10 @@ define([
     /**
      * @private
      * Show end result screen.
+     * @param {string{}} Animal ID mapping by peer ID.
      * @param {string[]} Peer ID array in order of the ranks.
      */
-    function showEndResultScreen(ranks) {
+    function showEndResultScreen(animalIdsMapping, ranks) {
         __titleScreen.clip.visible = false;
         __titleScreen.pause();
         __hudScreen.clip.visible = false;
@@ -284,7 +285,7 @@ define([
         __game.pause();
         __endResultScreen.clip.visible = true;
         __endResultScreen.reset();
-        __endResultScreen.showRanks(__connectionManager.myPeerId, ranks);
+        __endResultScreen.showRanks(animalIdsMapping, __connectionManager.myPeerId, ranks);
         __endResultScreen.resume();
 
         if (!__soundManager.isPlayingMusic(SoundDictionary.MUSIC_TITLE)) {
@@ -360,9 +361,8 @@ define([
     /**
      * @private
      */
-    function onEndResultScreenPlayClick(event) {
+    function onEndResultScreenBackToTitleClick(event) {
         showTitleScreen();
-        onTitleScreenPlayClick(event);
     }
 
     /**
@@ -410,11 +410,12 @@ define([
     function onConnectionSuccess(event) {
         if (__titleScreen.clip.visible) {
             __titleScreen.showPlayButton();
-            /*showEndResultScreen([
+            showEndResultScreen(__connectionManager.animalIdsMapping, [
                 '111',
                 '222',
+                '333',
                 __connectionManager.myPeerId
-            ]);*/
+            ]);
         }}
 
     /**

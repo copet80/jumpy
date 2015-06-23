@@ -78,6 +78,12 @@ define([
      */
     ConnectionManager.prototype.animalId = null;
 
+    /**
+     * Mapping between peer ID and animal IDs.
+     * @type {string{}}
+     */
+    ConnectionManager.prototype.animalIdsMapping = {};
+
     // ===========================================
     //  Protected Members
     // ===========================================
@@ -167,6 +173,7 @@ define([
             //key: 'apv9cn0q4669wwmi'
             port: 9999,
             host: 'localhost'
+            //host: 'anthonytdt.objective.com'
         });
 
         this._peer.on('open', function(id) {
@@ -306,6 +313,7 @@ define([
                         event = new createjs.Event(ConnectionManager.PEER_ADD);
                         event.peerId = conn.peer;
                         event.animalId = data.animalId;
+                        this.animalIdsMapping[event.peerId] = event.animalId;
                         this.dispatchEvent(event);
                         break;
 
@@ -374,6 +382,7 @@ define([
      * @param {string[]} peerIds Peer IDs connected.
      */
     ConnectionManager.prototype._startGame = function(peerIds) {
+        this.animalIdsMapping = {};
         // self-organise incoming and outgoing peer connections so that peers don't go into a connection race
         this._outgoingPeerIds = [];
         this._incomingPeerIds = [];

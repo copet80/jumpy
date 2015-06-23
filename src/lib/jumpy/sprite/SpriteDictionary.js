@@ -18,7 +18,7 @@ define([
 
     // Bitmaps
     SpriteDictionary.BITMAP_PLAY_BUTTON = "assets/bitmaps/button-play.png";
-    SpriteDictionary.BITMAP_PLAY_AGAIN_BUTTON = "assets/bitmaps/button-play-again.png";
+    SpriteDictionary.BITMAP_BACK_TO_TITLE_BUTTON = "assets/bitmaps/button-back-to-title.png";
     SpriteDictionary.BITMAP_LOGO = "assets/bitmaps/logo.png";
     SpriteDictionary.BITMAP_TIME_TEXT = "assets/bitmaps/text-time.png";
     SpriteDictionary.BITMAP_WAITING_TEXT = "assets/bitmaps/text-waiting.png";
@@ -46,6 +46,7 @@ define([
 
     SpriteDictionary.BITMAPS = [
         SpriteDictionary.BITMAP_PLAY_BUTTON,
+        SpriteDictionary.BITMAP_BACK_TO_TITLE_BUTTON,
         SpriteDictionary.BITMAP_LOGO,
         SpriteDictionary.BITMAP_TIME_TEXT,
         SpriteDictionary.BITMAP_WAITING_TEXT,
