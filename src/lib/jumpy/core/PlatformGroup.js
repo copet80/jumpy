@@ -18,7 +18,7 @@ define([
      * Seed number for the random platform generation.
      * @type {number}
      */
-    PlatformGroup.prototype._seed = null;
+    PlatformGroup.prototype._seed = 0;
 
     // ===========================================
     //  Constructor
@@ -78,10 +78,10 @@ define([
      * @inheritDoc
      * Changes platform type based on seed.
      */
-    PlatformGroup.prototype.postObjectUpdate = function(object, index) {
+    PlatformGroup.prototype.postObjectUpdate = function(object, index, forceUpdate) {
         var pageIndex = Math.floor(object.ry / this._boundHeight);
         var platformIndex = pageIndex * this._objects.length + index;
-        if (object.index !== platformIndex) {
+        if (object.index !== platformIndex || forceUpdate) {
             object.index = platformIndex;
             object.type = this.getPlatformType(platformIndex);
         }

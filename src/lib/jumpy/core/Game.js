@@ -76,6 +76,13 @@ define([
 
     /**
      * @private
+     * Platforms seed.
+     * @type {number}
+     */
+    Game.prototype._seed = 0;
+
+    /**
+     * @private
      * Sky.
      * @type {ParallaxGroup}
      */
@@ -232,6 +239,27 @@ define([
         this.clip.y = this._shake * Math.random();
     });
 
+    /**
+     * Platforms seed.
+     * @type {number}
+     */
+    Game.prototype.__defineGetter__("seed", function() {
+        return this._seed;
+    });
+    /**
+     * @private
+     */
+    Game.prototype.__defineSetter__("seed", function(value) {
+        this._seed = value;
+        if (this._platforms) {
+            this._platforms.seed = this._seed;
+        }
+        if (this._myCharacter) {
+            this._resetCharacter(this._myCharacter);
+        }
+        this.update(true);
+    });
+
     // ===========================================
     //  Public Methods
     // ===========================================
@@ -263,7 +291,10 @@ define([
         this._currentStep = 0;
         this._platformIndex = 0;
         this.isActive = true;
-
+        this.update(true);
+        if (this._myCharacter) {
+            this._resetCharacter(this._myCharacter);
+        }
         this.resume();
     };
 
@@ -272,8 +303,6 @@ define([
      */
     Game.prototype.pause = function() {
         this._isPaused = true;
-        this._pauseAnimations();
-        this._pauseSounds();
     };
 
     /**
@@ -281,8 +310,6 @@ define([
      */
     Game.prototype.resume = function() {
         this._isPaused = false;
-        this._resumeAnimations();
-        this._resumeSounds();
     };
 
     /**
@@ -299,10 +326,9 @@ define([
 
     /**
      * Main loop logic.
-     *
-     * @param {number} deltaTime Time passed since last tick.
+     * @param {boolean} forceUpdate Set to true to force update.
      */
-    Game.prototype.update = function(deltaTime) {
+    Game.prototype.update = function(forceUpdate) {
         if (!this.clip.visible) return;
 
         if (this._currentStep < 0) {
@@ -310,7 +336,7 @@ define([
         }
         this._sky.update(this._currentStep);
         this._treeTrunk.update(this._currentStep);
-        this._platforms.update(this._currentStep);
+        this._platforms.update(this._currentStep, forceUpdate);
 
         var i = this._characters.length;
         var character;
@@ -403,12 +429,7 @@ define([
     Game.prototype.addPeer = function(peerId, animalId) {
         var character = new Character(peerId);
         character.animalId = animalId;
-        character.x = this._getRandomPositionOnPlatform(this._platforms.getPlatformType(0));
-        character.y = GameConfig.VIEWPORT_HEIGHT - Platform.SPRITE_HEIGHT * 0.72;
-        character.y0 = character.y;
-        character.ry = 0;
-        character.update();
-        character.idle();
+        this._resetCharacter(character);
         this.addCharacter(character);
     };
 
@@ -480,7 +501,7 @@ define([
      * Initializes platforms.
      */
     Game.prototype._initPlatforms = function() {
-        this._platforms = new PlatformGroup();
+        this._platforms = new PlatformGroup(this._seed);
         this._platformsContainer.addChild(this._platforms.clip);
     };
 
@@ -493,13 +514,21 @@ define([
         this._charactersById = {};
         this._myCharacter = new Character('myCharacter', true);
         this._myCharacter.animalId = GameConfig.ANIMALS[Math.floor(Math.random() * GameConfig.ANIMALS.length)];
-
-        this._myCharacter.x = this._getRandomPositionOnPlatform(this._platforms.getPlatformType(0));
-        this._myCharacter.y = GameConfig.VIEWPORT_HEIGHT - Platform.SPRITE_HEIGHT * 0.72;
-        this._myCharacter.y0 = this._myCharacter.y;
-        this._myCharacter.update();
-        this._myCharacter.idle();
+        this._resetCharacter(this._myCharacter);
         this.addCharacter(this._myCharacter);
+    };
+
+    /**
+     * @private
+     * Resets character and its position to the first platform.
+     * @param {Character} character Character to reset.
+     */
+    Game.prototype._resetCharacter = function(character) {
+        character.x = this._getRandomPositionOnPlatform(this._platforms.getPlatformType(0));
+        character.y0 = character.y = GameConfig.VIEWPORT_HEIGHT - Platform.SPRITE_HEIGHT * 0.72;
+        character.ry = 0;
+        character.update();
+        character.idle();
     };
 
     /**
@@ -524,38 +553,6 @@ define([
                        (Math.random() * (GameConfig.VIEWPORT_WIDTH * 0.25 - GameConfig.CHARACTER_SPRITE_WIDTH));
         }
         return 0;
-    };
-
-    /**
-     * @private
-     * Pauses all animations.
-     */
-    Game.prototype._pauseAnimations = function() {
-        // TODO
-    };
-
-    /**
-     * @private
-     * Resumes all animations.
-     */
-    Game.prototype._resumeAnimations = function() {
-        // TODO
-    };
-
-    /**
-     * @private
-     * Pauses all sounds.
-     */
-    Game.prototype._pauseSounds = function() {
-        // TODO
-    };
-
-    /**
-     * @private
-     * Resumes all sounds.
-     */
-    Game.prototype._resumeSounds = function() {
-        // TODO
     };
 
     /**

@@ -110,8 +110,10 @@ define([
 
     /**
      * Updates position and state of the objects.
+     * @param {number} step
+     * @param {boolean} forceUpdate Set to true to force update.
      */
-    ParallaxGroup.prototype.update = function(step) {
+    ParallaxGroup.prototype.update = function(step, forceUpdate) {
         if (!isNaN(step)) {
             this._step = step;
         }
@@ -123,11 +125,11 @@ define([
             index = this._objectsCount - i - 1;
             object = this._objects[i];
             object.ry = scrollValue + object.spriteHeight * index;
-            object.y = (object.ry % this._boundHeight) - object.spriteHeight;
+            object.y = Math.floor((object.ry % this._boundHeight) - object.spriteHeight);
             if (object.y < -object.spriteHeight) {
                 object.y += this._boundHeight;
             }
-            this.postObjectUpdate(object, i);
+            this.postObjectUpdate(object, i, forceUpdate);
             object.update();
         }
     };
@@ -175,8 +177,9 @@ define([
      * Post processing on object after update loop.
      * @param {ParallaxObject} object Object affected.
      * @param {number} index Index of the object in the loop.
+     * @param {boolean} forceUpdate Set to true to force update.
      */
-    ParallaxGroup.prototype.postObjectUpdate = function(object, index) {
+    ParallaxGroup.prototype.postObjectUpdate = function(object, index, forceUpdate) {
         // Specific implementation is done on the child classes.
     };
 

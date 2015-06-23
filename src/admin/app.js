@@ -34,7 +34,7 @@
          * How many milliseconds before game ends.
          * @type {number}
          */
-        var PLAY_TIME = 10000;
+        var PLAY_TIME = 60000;
 
         /**
          * Countdown start time.

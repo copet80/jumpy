@@ -316,7 +316,7 @@ define([
         createjs.Tween.removeTweens(this._betterLuckText);
         createjs.Tween.removeTweens(this._btnBackToTitle.clip);
 
-        this._btnBackToTitle.clip.scaleX = this._btnBackToTitle.clip.scaleY = 1;
+        this._btnBackToTitle.clip.scaleX = this._btnBackToTitle.clip.scaleY = 0;
         this._rank1stText.scaleX = this._rank1stText.scaleY = 1;
         this._rank2ndText.scaleX = this._rank2ndText.scaleY = 1;
         this._rank3rdText.scaleX = this._rank3rdText.scaleY = 1;

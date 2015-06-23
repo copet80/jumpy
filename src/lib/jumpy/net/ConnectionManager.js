@@ -8,6 +8,16 @@ define([
     "jumpy/core/GameConfig"
 ], function(createjs, GameConfig) {
     // ===========================================
+    //  Private Constants
+    // ===========================================
+    /**
+     * @private
+     * Debug mode.
+     * @type {boolean}
+     */
+    const DEBUG = false;
+
+    // ===========================================
     //  Singleton
     // ===========================================
     var instance = null;
@@ -38,6 +48,12 @@ define([
      * @type {string}
      */
     ConnectionManager.GAME_START_TIME_RECEIVED = "gameStartTimeReceived";
+
+    /**
+     * Dispatched when admin says game end.
+     * @type {string}
+     */
+    ConnectionManager.GAME_END = "gameEnd";
 
     /**
      * Dispatched when admin sends game end time.
@@ -177,15 +193,15 @@ define([
         });
 
         this._peer.on('open', function(id) {
-            console.log('[OPEN] Peer ID: ' + id);
+            this._log('[OPEN] Peer ID: ' + id);
             var adminConn = this._peer.connect('jumpyadmin');
             this._admin = adminConn;
             adminConn.on('open', function() {
-                console.log('[CONNECTION OPEN]');
+                this._log('[CONNECTION OPEN]');
                 this.dispatchEvent(new createjs.Event(ConnectionManager.CONNECTION_SUCCESS));
             }.bind(this));
             adminConn.on('data', function(data) {
-                console.log('[CONNECTION DATA]', data);
+                this._log('[CONNECTION DATA]', data);
                 var event;
                 switch (data.action) {
                     case 'wait':
@@ -212,7 +228,7 @@ define([
                 }
             }.bind(this));
             adminConn.on('close', function() {
-                console.log('[CONNECTION CLOSE]');
+                this._log('[CONNECTION CLOSE]');
                 this.dispatchEvent(new createjs.Event(ConnectionManager.CONNECTION_ERROR));
             }.bind(this));
             adminConn.on('error', function(error) {
@@ -221,17 +237,17 @@ define([
             }.bind(this));
         }.bind(this));
         this._peer.on('connection', function(conn) {
-            console.log('[PEER CONNECTION]', conn);
+            this._log('[PEER CONNECTION]', conn);
             // only add peer from incoming client
             if (this._incomingPeerIds.indexOf(conn.peer) >= 0) {
                 this._addPeer(conn);
             }
         }.bind(this));
         this._peer.on('close', function() {
-            console.log('[CLOSE]');
+            this._log('[CLOSE]');
         }.bind(this));
         this._peer.on('disconnected', function() {
-            console.log('[DISCONNECTED]');
+            this._log('[DISCONNECTED]');
         }.bind(this));
         this._peer.on('error', function(error) {
             console.error('[ERROR]', error);
@@ -305,9 +321,9 @@ define([
         }
 
         conn.on('open', function() {
-            console.log('[PEER CONNECTION OPEN]', conn);
+            this._log('[PEER CONNECTION OPEN]', conn);
             conn.on('data', function(data) {
-                console.log('[PEER CONNECTION DATA]', data);
+                this._log('[PEER CONNECTION DATA]', data);
                 switch (data.action) {
                     case 'animal':
                         event = new createjs.Event(ConnectionManager.PEER_ADD);
@@ -326,7 +342,7 @@ define([
                 }
             }.bind(this));
             conn.on('close', function() {
-                console.log('[PEER CONNECTION CLOSE]', conn);
+                this._log('[PEER CONNECTION CLOSE]', conn);
                 this._removePeer(conn);
             }.bind(this));
             conn.on('error', function(error) {
@@ -416,9 +432,20 @@ define([
     ConnectionManager.prototype._endGame = function(data) {
         this._reset();
         var event = new createjs.Event(ConnectionManager.GAME_END);
-        event.winner = data.winner;
-        event.rank = data.rank;
+        event.animalIdsMapping = this.animalIdsMapping;
+        event.ranks = data.ranks;
         this.dispatchEvent(event);
+    };
+
+    /**
+     * @private
+     * Console log.
+     * @param {string} text
+     */
+    ConnectionManager.prototype._log = function(text) {
+        if (DEBUG) {
+            console.log(text);
+        }
     };
 
     return ConnectionManager;

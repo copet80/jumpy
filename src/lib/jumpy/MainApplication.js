@@ -209,26 +209,6 @@ define([
 
     /**
      * @private
-     * Restarts game.
-     */
-    function restartGame() {
-        __game.reset();
-        __game.resume();
-        __titleScreen.clip.visible = false;
-        __hudScreen.reset();
-        __hudScreen.pause();
-        __hudScreen.clip.visible = true;
-        __game.clip.visible = true;
-        __endResultScreen.reset();
-        __endResultScreen.pause();
-        __endResultScreen.clip.visible = false;
-
-        __soundManager.stopSounds();
-        __soundManager.playMusic(SoundDictionary.MUSIC_BACKGROUND);
-    }
-
-    /**
-     * @private
      * Show title screen.
      */
     function showTitleScreen() {
@@ -238,6 +218,7 @@ define([
         __hudScreen.clip.visible = false;
         __hudScreen.reset();
         __hudScreen.pause();
+        __game.reset();
         __game.clip.visible = true;
         __game.pause();
         __endResultScreen.clip.visible = false;
@@ -285,8 +266,8 @@ define([
         __game.pause();
         __endResultScreen.clip.visible = true;
         __endResultScreen.reset();
-        __endResultScreen.showRanks(animalIdsMapping, __connectionManager.myPeerId, ranks);
         __endResultScreen.resume();
+        __endResultScreen.showRanks(animalIdsMapping, __connectionManager.myPeerId, ranks);
 
         if (!__soundManager.isPlayingMusic(SoundDictionary.MUSIC_TITLE)) {
             __soundManager.playMusic(SoundDictionary.MUSIC_TITLE);
@@ -314,11 +295,9 @@ define([
      * Game loop.
      */
     function update(event) {
-        if (!__game.isPaused) {
-            __game.update(event.delta);
-        }
+        __game.update();
         if (!__hudScreen.isPaused) {
-            __hudScreen.update(event.delta);
+            __hudScreen.update();
         }
         if (__endResultScreen.clip.visible) {
             __endResultScreen.update();
@@ -363,6 +342,8 @@ define([
      */
     function onEndResultScreenBackToTitleClick(event) {
         showTitleScreen();
+        __connectionManager.animalId = __game.currentAnimalId;
+        __connectionManager.connect();
     }
 
     /**
@@ -410,12 +391,6 @@ define([
     function onConnectionSuccess(event) {
         if (__titleScreen.clip.visible) {
             __titleScreen.showPlayButton();
-            showEndResultScreen(__connectionManager.animalIdsMapping, [
-                '111',
-                '222',
-                '333',
-                __connectionManager.myPeerId
-            ]);
         }}
 
     /**
@@ -438,9 +413,7 @@ define([
      * @private
      */
     function onGameEnd(event) {
-        showTitleScreen();
-        __connectionManager.animalId = __game.currentAnimalId;
-        __connectionManager.connect();
+        showEndResultScreen(event.animalIdsMapping, event.ranks);
     }
 
     /**
@@ -453,6 +426,7 @@ define([
             __titleScreen.showStarting();
         }
         __hudScreen.timeDiff = event.timeDiff;
+        __game.seed = event.gameStartTime;
     }
 
     /**

@@ -25,7 +25,7 @@ define([
      * Sprite height.
      * @type {number}
      */
-    const SPRITE_HEIGHT = 933;
+    const SPRITE_HEIGHT = 931;
 
     // ===========================================
     //  Constructor
