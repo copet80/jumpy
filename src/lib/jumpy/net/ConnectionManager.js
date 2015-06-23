@@ -422,6 +422,11 @@ define([
             }.bind(this));
             this.dispatchEvent(new createjs.Event(ConnectionManager.GAME_START));
         }
+
+        this._admin.send({
+            action: 'animal',
+            animalId: this.animalId
+        });
     };
 
     /**

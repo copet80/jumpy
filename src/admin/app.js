@@ -1,5 +1,43 @@
 (function() {
     $(document).ready(function() {
+        const ANIMALS = [
+            "Bat",
+            "Brown Bear",
+            "Cat",
+            "Crocodile",
+            "Duck",
+            "Elephant",
+            "Fox",
+            "Frog",
+            "Hamster",
+            "Hippo",
+            "Horse",
+            "Koala",
+            "Lion",
+            "Monkey",
+            "Moose",
+            "Panda",
+            "Parrot",
+            "Penguin",
+            "Pig",
+            "Polar Bear",
+            "Rabbit",
+            "Rhino",
+            "Shark",
+            "Sheep",
+            "Snow Owl",
+            "Tiger",
+            "Walrus",
+            "Wolf"
+        ];
+        
+        /**
+         * @private
+         * Debug mode.
+         * @type {boolean}
+         */
+        const DEBUG = false;
+
         /**
          * Peer has connected but hasn't made a decision to join a game.
          * @type {string}
@@ -114,7 +152,7 @@
                         table = $('<table id="' + gameId + '" class="table table-condensed table-bordered game">' +
                             '<thead>' +
                             '<tr>' +
-                            '<th colspan="4">' +
+                            '<th colspan="5">' +
                             'Game #<span class="game-id">' + gameId + '</span>' +
                             '<br>' +
                             'Remaining Time: <span class="time"></span>' +
@@ -122,6 +160,7 @@
                             '</tr>' +
                             '<tr>' +
                             '<th>#</th>' +
+                            '<th>Animal</th>' +
                             '<th>Player ID</th>' +
                             '<th>Browser</th>' +
                             '<th>Score</th>' +
@@ -136,19 +175,33 @@
                     if (peers.length === 0) {
                         table.remove();
                     } else {
-                        table.find('tbody').html(
-                            peers.length ? '' : '<tr><td colspan="4">No players yet.</td></tr>'
-                        );
-                        peers.sort(sortPeersByScore);
-                        peers.forEach(function(peerConn, index) {
-                            var row = $('<tr id="' + peerConn.peer + '">' +
-                                '<td>' + (index + 1) + '</td>' +
-                                '<td>' + peerConn.peer + '</td>' +
-                                '<td>' + peerConn._peerBrowser + '</td>' +
-                                '<td class="score">' + peerConn.score + '</td>' +
-                                '</tr>');
-                            table.find('tbody').append(row);
-                        });
+                        if (peers.length === 0) {
+                            table.find('tbody').html('<tr><td colspan="4">No players yet.</td></tr>');
+                        } else {
+                            peers.sort(sortPeersByScore);
+                            peers.forEach(function(peerConn, index) {
+                                var rows = table.find('tbody tr');
+                                var row;
+                                if (rows.length < peers.length) {
+                                    row = $('<tr>' +
+                                        '<td class="index"></td>' +
+                                        '<td class="animal"></td>' +
+                                        '<td class="id"></td>' +
+                                        '<td class="browser"></td>' +
+                                        '<td class="score"></td>' +
+                                        '</tr>');
+                                    table.find('tbody').append(row);
+                                } else {
+                                    row = $(rows[index]);
+                                }
+                                row.attr('id', peerConn.peer);
+                                row.find('td.index').text(index + 1);
+                                row.find('td.animal').css("background-position", "0 " + (ANIMALS.indexOf(peerConn.animalId) * -44) + "px");
+                                row.find('td.id').text(peerConn.peer);
+                                row.find('td.browser').text(peerConn._peerBrowser);
+                                row.find('td.score').text(peerConn.score);
+                            });
+                        }
                     }
                 });
                 // remove game that is already gone
@@ -192,14 +245,6 @@
                 });
             }
             requestAnimationFrame(refreshGameRemainingTimes);
-        }
-
-        /**
-         * Updates score on peer.
-         * @param {DataConnection} peerConn
-         */
-        function updateScore(peerConn) {
-            $('#games-list #' + peerConn.peer + ' .score').text(peerConn.score);
         }
 
         /**
@@ -352,6 +397,17 @@
         }
 
         /**
+         * @private
+         * Console log.
+         * @param {string} text
+         */
+        function log(text) {
+            if (DEBUG) {
+                console.log(text);
+            }
+        }
+
+        /**
          * Peer object for this admin.
          * @type {Peer}
          */
@@ -363,19 +419,19 @@
         });
 
         peer.on('open', function(id) {
-            console.log('[OPEN] Peer ID: ' + id);
+            log('[OPEN] Peer ID: ' + id);
             reset();
             updateCountDown();
         });
         peer.on('connection', function(conn) {
-            console.log('[CONNECTION] Connection...', conn);
+            log('[CONNECTION] Connection...', conn);
             conn.on('open', function() {
-                console.log('[CONNECTION OPEN]');
+                log('[CONNECTION OPEN]');
                 addPeer(conn);
                 updatePeersList();
             });
             conn.on('data', function(data) {
-                console.log('[CONNECTION DATA]', data, conn);
+                log('[CONNECTION DATA]', data, conn);
                 switch (data.action) {
                     case 'join':
                         conn.status = STATUS_JOINING;
@@ -385,12 +441,17 @@
 
                     case 'score':
                         conn.score = data.score;
-                        updateScore(conn);
+                        updateGamesList();
+                        break;
+
+                    case 'animal':
+                        conn.animalId = data.animalId;
+                        updateGamesList();
                         break;
                 }
             });
             conn.on('close', function() {
-                console.log('[CONNECTION CLOSE]');
+                log('[CONNECTION CLOSE]');
                 removePeer(conn);
                 updatePeersList();
                 updateGamesList();
@@ -403,10 +464,10 @@
             });
         });
         peer.on('close', function() {
-            console.log('[CLOSE]');
+            log('[CLOSE]');
         });
         peer.on('disconnected', function() {
-            console.log('[DISCONNECTED]');
+            log('[DISCONNECTED]');
         });
         peer.on('error', function(error) {
             console.error('[ERROR]', error);
