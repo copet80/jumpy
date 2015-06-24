@@ -271,9 +271,7 @@ define([
         __endResultScreen.resume();
         __endResultScreen.showRanks(animalIdsMapping, myPeerId, ranks);
 
-        if (!__soundManager.isPlayingMusic(SoundDictionary.MUSIC_TITLE)) {
-            __soundManager.playMusic(SoundDictionary.MUSIC_TITLE);
-        }
+        __soundManager.stopMusic();
     }
 
     /**

@@ -8,11 +8,14 @@ define([
     "jumpy/core/GameConfig",
     "jumpy/core/SpriteSheetConfig",
     "jumpy/sprite/SpriteDictionary",
+    "jumpy/sound/SoundDictionary",
+    "jumpy/sound/SoundManager",
     "jumpy/controls/Button"
 ], function(
     BaseScreen,
     GameConfig, SpriteSheetConfig,
-    SpriteDictionary,Button
+    SpriteDictionary, SoundDictionary, SoundManager,
+    Button
 ) {
     // ===========================================
     //  Event Types
@@ -441,6 +444,8 @@ define([
     EndResultScreen.prototype._showWin = function(winText) {
         this.reset();
 
+        SoundManager.getInstance().playSound(SoundDictionary.SOUND_WIN);
+
         this._wellDoneText.scaleX = this._wellDoneText.scaleY = 0;
         this._wellDoneText.visible = true;
         createjs.Tween.get(this._wellDoneText)
@@ -460,6 +465,7 @@ define([
             .wait(1500)
             .to({ scaleX: 1, scaleY: 1, alpha: 1 }, 1000, createjs.Ease.quartIn)
             .call(function() {
+                SoundManager.getInstance().playSound(SoundDictionary.SOUND_EXPLODE_SMASH);
                 this.dispatchEvent(new createjs.Event(EndResultScreen.SMASH_SCREEN));
             }.bind(this));
 
@@ -504,6 +510,8 @@ define([
      */
     EndResultScreen.prototype._showLose = function(animalIdsMapping, ranks) {
         this.reset();
+
+        SoundManager.getInstance().playSound(SoundDictionary.SOUND_LOSE);
 
         this._oopsText.scaleX = this._oopsText.scaleY = 0;
         this._oopsText.visible = true;

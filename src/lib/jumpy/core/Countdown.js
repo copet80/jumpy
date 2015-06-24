@@ -7,8 +7,10 @@ define([
     "createjs",
     "jumpy/core/GameConfig",
     "jumpy/core/MovingObject",
-    "jumpy/sprite/SpriteDictionary"
-], function(createjs, GameConfig, MovingObject, SpriteDictionary) {
+    "jumpy/sprite/SpriteDictionary",
+    "jumpy/sound/SoundDictionary",
+    "jumpy/sound/SoundManager"
+], function(createjs, GameConfig, MovingObject, SpriteDictionary, SoundDictionary, SoundManager) {
 
     // ===========================================
     //  Private Constants
@@ -91,6 +93,7 @@ define([
         else if (value > 99) value = 99;
         if (this._value !== value) {
             if (value < 10) {
+                SoundManager.getInstance().playSound(SoundDictionary.SOUND_COUNTDOWN_TICK);
                 createjs.Tween.removeTweens(this.clip);
                 this.clip.scaleX = this.clip.scaleY = 2;
                 createjs.Tween.get(this.clip)
