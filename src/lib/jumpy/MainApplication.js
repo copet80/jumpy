@@ -115,6 +115,7 @@ define([
         __stage.addChild(__game.clip);
         __game.clip.visible = false;
         __game.on(Game.MY_CHARACTER_JUMP, onMyCharacterJump);
+        __game.on(Game.MY_ANIMAL_CHANGE, onMyAnimalChange);
 
         // initialize HUD screen
         __hudScreen = new HUDScreen("hudScreen");
@@ -476,6 +477,13 @@ define([
     function onMyCharacterJump(event) {
         __connectionManager.updateScore(event.score);
         __connectionManager.updatePlatformIndex(event.platformIndex);
+    }
+
+    /**
+     * @private
+     */
+    function onMyAnimalChange(event) {
+        __connectionManager.animalId = __game.currentAnimalId;
     }
 
     return MainApplication;

@@ -28,6 +28,12 @@ define([
      */
     Game.MY_CHARACTER_JUMP = "myCharacterJump";
 
+    /**
+     * Dispatched when I change my animal.
+     * @type {string}
+     */
+    Game.MY_ANIMAL_CHANGE = "myAnimalChange";
+
     // ===========================================
     //  Public Members
     // =======================================
@@ -609,6 +615,7 @@ define([
                         animalIndex = GameConfig.ANIMALS.length - 1;
                     }
                     this._myCharacter.animalId = GameConfig.ANIMALS[animalIndex];
+                    this.dispatchEvent(new createjs.Event(Game.MY_ANIMAL_CHANGE));
                     break;
 
                 // RIGHT key
@@ -618,6 +625,7 @@ define([
                         animalIndex = 0;
                     }
                     this._myCharacter.animalId = GameConfig.ANIMALS[animalIndex];
+                    this.dispatchEvent(new createjs.Event(Game.MY_ANIMAL_CHANGE));
                     break;
             }
             return;
