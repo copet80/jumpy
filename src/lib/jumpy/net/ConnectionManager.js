@@ -151,6 +151,7 @@ define([
         }
 
         this._peers = [];
+        setInterval(this._checkAdminConnection.bind(this), 1000);
     }
 
     // Extends createjs EventDispatcher
@@ -168,17 +169,6 @@ define([
     };
 
     // ===========================================
-    //  Getters / Setters
-    // ===========================================
-    /**
-     * Current player's peer ID.
-     * @type {string}
-     */
-    ConnectionManager.prototype.__defineGetter__("myPeerId", function() {
-        return this._peer ? this._peer.id : null;
-    });
-
-    // ===========================================
     //  Public Methods
     // ===========================================
     /**
@@ -194,47 +184,7 @@ define([
 
         this._peer.on('open', function(id) {
             this._log('[OPEN] Peer ID: ' + id);
-            var adminConn = this._peer.connect('jumpyadmin');
-            this._admin = adminConn;
-            adminConn.on('open', function() {
-                this._log('[CONNECTION OPEN]');
-                this.dispatchEvent(new createjs.Event(ConnectionManager.CONNECTION_SUCCESS));
-            }.bind(this));
-            adminConn.on('data', function(data) {
-                this._log('[CONNECTION DATA]', data);
-                var event;
-                switch (data.action) {
-                    case 'wait':
-                        this.dispatchEvent(new createjs.Event(ConnectionManager.WAIT_FOR_OTHERS));
-                        break;
-
-                    case 'startTime':
-                        event = new createjs.Event(ConnectionManager.GAME_START_TIME_RECEIVED);
-                        event.gameStartTime = data.startTime;
-                        event.timeDiff = new Date().getTime() - data.globalTime;
-                        this.dispatchEvent(event);
-                        break;
-
-                    case 'start':
-                        this._startGame(data.peerIds);
-                        event = new createjs.Event(ConnectionManager.GAME_END_TIME_RECEIVED);
-                        event.gameEndTime = data.endTime;
-                        this.dispatchEvent(event);
-                        break;
-
-                    case 'end':
-                        this._endGame(data);
-                        break;
-                }
-            }.bind(this));
-            adminConn.on('close', function() {
-                this._log('[CONNECTION CLOSE]');
-                this.dispatchEvent(new createjs.Event(ConnectionManager.CONNECTION_ERROR));
-            }.bind(this));
-            adminConn.on('error', function(error) {
-                console.error('[CONNECTION ERROR]', error);
-                this.dispatchEvent(new createjs.Event(ConnectionManager.CONNECTION_ERROR));
-            }.bind(this));
+            this._connectToAdmin();
         }.bind(this));
         this._peer.on('connection', function(conn) {
             this._log('[PEER CONNECTION]', conn);
@@ -369,6 +319,9 @@ define([
             if (this._peers[i].peer === conn.peer) {
                 event = new createjs.Event(ConnectionManager.PEER_REMOVE);
                 event.peerId = conn.peer;
+                try {
+                    conn.close();
+                } catch (error) {}
                 this.dispatchEvent(event);
                 this._peers.splice(i, 1);
                 break;
@@ -385,16 +338,19 @@ define([
         var i = this._peers.length;
         var conn;
         while (--i >= 0) {
-            conn = this.pop();
+            conn = this._peers.pop();
             event = new createjs.Event(ConnectionManager.PEER_REMOVE);
             event.peerId = conn.peer;
+            try {
+                conn.close();
+            } catch (error) {}
             this.dispatchEvent(event);
         }
     };
 
     /**
+     * @private
      * Starts the game.
-     *
      * @param {string[]} peerIds Peer IDs connected.
      */
     ConnectionManager.prototype._startGame = function(peerIds) {
@@ -430,16 +386,81 @@ define([
     };
 
     /**
+     * @private
      * Ends the game.
-     *
      * @param {object} data
      */
     ConnectionManager.prototype._endGame = function(data) {
-        this._reset();
         var event = new createjs.Event(ConnectionManager.GAME_END);
         event.animalIdsMapping = this.animalIdsMapping;
+        event.myPeerId = this._peer.id;
         event.ranks = data.ranks;
         this.dispatchEvent(event);
+        this._reset();
+    };
+
+    /**
+     * @private
+     * Connects to admin.
+     */
+    ConnectionManager.prototype._connectToAdmin = function() {
+        var adminConn = this._peer.connect('jumpyadmin');
+        this._admin = adminConn;
+        adminConn.on('open', function() {
+            this._log('[CONNECTION OPEN]');
+            this.dispatchEvent(new createjs.Event(ConnectionManager.CONNECTION_SUCCESS));
+        }.bind(this));
+        adminConn.on('data', function(data) {
+            this._log('[CONNECTION DATA]', data);
+            var event;
+            switch (data.action) {
+                case 'wait':
+                    this.dispatchEvent(new createjs.Event(ConnectionManager.WAIT_FOR_OTHERS));
+                    break;
+
+                case 'startTime':
+                    event = new createjs.Event(ConnectionManager.GAME_START_TIME_RECEIVED);
+                    event.gameStartTime = data.startTime;
+                    event.timeDiff = new Date().getTime() - data.globalTime;
+                    this.dispatchEvent(event);
+                    break;
+
+                case 'start':
+                    this._startGame(data.peerIds);
+                    event = new createjs.Event(ConnectionManager.GAME_END_TIME_RECEIVED);
+                    event.gameEndTime = data.endTime;
+                    this.dispatchEvent(event);
+                    break;
+
+                case 'end':
+                    this._endGame(data);
+                    break;
+            }
+        }.bind(this));
+        adminConn.on('close', function() {
+            this._log('[CONNECTION CLOSE]');
+            this._removeAllPeers();
+            this._admin = null;
+            this.dispatchEvent(new createjs.Event(ConnectionManager.CONNECTION_ERROR));
+        }.bind(this));
+        adminConn.on('error', function(error) {
+            console.error('[CONNECTION ERROR]', error);
+            this._removeAllPeers();
+            this._admin = null;
+            this.dispatchEvent(new createjs.Event(ConnectionManager.CONNECTION_ERROR));
+        }.bind(this));
+    };
+
+    /**
+     * @private
+     * Checks connection to admin and try to reconnect if disconnected.
+     */
+    ConnectionManager.prototype._checkAdminConnection = function() {
+        if (this._peer && !this._peer.disconnected) {
+            if (!this._admin) {
+                this._connectToAdmin();
+            }
+        }
     };
 
     /**

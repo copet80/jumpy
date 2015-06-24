@@ -306,6 +306,10 @@ define([
         this._oopsText.visible = false;
         this._betterLuckText.visible = false;
 
+        if (this._btnBackToTitle.tween) {
+            this._btnBackToTitle.tween.pause();
+        }
+        createjs.Tween.removeTweens(this._btnBackToTitle.clip);
         createjs.Tween.removeTweens(this._rank1stText);
         createjs.Tween.removeTweens(this._rank2ndText);
         createjs.Tween.removeTweens(this._rank3rdText);
@@ -314,7 +318,6 @@ define([
         createjs.Tween.removeTweens(this._youCameText);
         createjs.Tween.removeTweens(this._oopsText);
         createjs.Tween.removeTweens(this._betterLuckText);
-        createjs.Tween.removeTweens(this._btnBackToTitle.clip);
 
         this._btnBackToTitle.clip.scaleX = this._btnBackToTitle.clip.scaleY = 0;
         this._rank1stText.scaleX = this._rank1stText.scaleY = 1;
@@ -332,11 +335,6 @@ define([
      */
     EndResultScreen.prototype.pause = function() {
         this._isPaused = true;
-
-        if (this._btnBackToTitle.clip.visible && !createjs.Tween.hasActiveTweens(this._btnBackToTitle.clip)) {
-            createjs.Tween.removeTweens(this._btnBackToTitle.clip);
-            this._btnBackToTitle.clip.scaleX = this._btnBackToTitle.clip.scaleY = 1;
-        }
     };
 
     /**
@@ -344,14 +342,6 @@ define([
      */
     EndResultScreen.prototype.resume = function() {
         this._isPaused = false;
-
-        if (this._btnBackToTitle.clip.visible && !createjs.Tween.hasActiveTweens(this._btnBackToTitle.clip)) {
-            createjs.Tween.removeTweens(this._btnBackToTitle.clip);
-            this._btnBackToTitle.clip.scaleX = this._btnBackToTitle.clip.scaleY = 1;
-            createjs.Tween.get(this._btnBackToTitle.clip, { loop: true })
-                .to({ scaleX: 1.1, scaleY: 1.1 }, 500, createjs.Ease.sineInOut)
-                .to({ scaleX: 1, scaleY: 1 }, 500, createjs.Ease.sineInOut);
-        }
     };
 
     /**
@@ -481,7 +471,8 @@ define([
             .call(function() {
                 createjs.Tween.removeTweens(this._btnBackToTitle.clip);
                 this._btnBackToTitle.clip.scaleX = this._btnBackToTitle.clip.scaleY = 1;
-                createjs.Tween.get(this._btnBackToTitle.clip, { loop: true })
+                this._btnBackToTitle.tween = createjs.Tween.get(this._btnBackToTitle.clip, { loop: true });
+                this._btnBackToTitle.tween
                     .to({ scaleX: 1.1, scaleY: 1.1 }, 500, createjs.Ease.sineInOut)
                     .to({ scaleX: 1, scaleY: 1 }, 500, createjs.Ease.sineInOut);
             }.bind(this));
@@ -540,7 +531,8 @@ define([
             .call(function() {
                 createjs.Tween.removeTweens(this._btnBackToTitle.clip);
                 this._btnBackToTitle.clip.scaleX = this._btnBackToTitle.clip.scaleY = 1;
-                createjs.Tween.get(this._btnBackToTitle.clip, { loop: true })
+                this._btnBackToTitle.tween = createjs.Tween.get(this._btnBackToTitle.clip, { loop: true });
+                this._btnBackToTitle.tween
                     .to({ scaleX: 1.1, scaleY: 1.1 }, 500, createjs.Ease.sineInOut)
                     .to({ scaleX: 1, scaleY: 1 }, 500, createjs.Ease.sineInOut);
             }.bind(this));

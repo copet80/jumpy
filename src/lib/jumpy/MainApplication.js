@@ -254,10 +254,11 @@ define([
     /**
      * @private
      * Show end result screen.
-     * @param {string{}} Animal ID mapping by peer ID.
-     * @param {string[]} Peer ID array in order of the ranks.
+     * @param {string{}} animalIdsMapping Animal ID mapping by peer ID.
+     * @param {string} myPeerId My current peer ID.
+     * @param {string[]} ranks Peer ID array in order of the ranks.
      */
-    function showEndResultScreen(animalIdsMapping, ranks) {
+    function showEndResultScreen(animalIdsMapping, myPeerId, ranks) {
         __titleScreen.clip.visible = false;
         __titleScreen.pause();
         __hudScreen.clip.visible = false;
@@ -267,7 +268,7 @@ define([
         __endResultScreen.clip.visible = true;
         __endResultScreen.reset();
         __endResultScreen.resume();
-        __endResultScreen.showRanks(animalIdsMapping, __connectionManager.myPeerId, ranks);
+        __endResultScreen.showRanks(animalIdsMapping, myPeerId, ranks);
 
         if (!__soundManager.isPlayingMusic(SoundDictionary.MUSIC_TITLE)) {
             __soundManager.playMusic(SoundDictionary.MUSIC_TITLE);
@@ -399,6 +400,9 @@ define([
     function onConnectionError(event) {
         if (__titleScreen.clip.visible) {
             __titleScreen.showConnectionError();
+        } else if (!__game.isPaused) {
+            showTitleScreen();
+            __titleScreen.showConnectionError();
         }
     }
 
@@ -413,7 +417,7 @@ define([
      * @private
      */
     function onGameEnd(event) {
-        showEndResultScreen(event.animalIdsMapping, event.ranks);
+        showEndResultScreen(event.animalIdsMapping, event.myPeerId, event.ranks);
     }
 
     /**
