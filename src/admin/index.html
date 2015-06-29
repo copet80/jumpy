@@ -8,6 +8,7 @@
     <link rel="stylesheet" href="../vendor/bootstrap/dist/css/bootstrap.min.css">
     <link rel="stylesheet" href="../vendor/bootstrap/dist/css/bootstrap-theme.min.css">
     <link rel="stylesheet" href="../vendor/font-awesome/css/font-awesome.min.css">
+    <script src="../vendor/moment/min/moment.min.js"></script>
     <script src="../vendor/jquery/dist/jquery.min.js"></script>
     <script src="../vendor/bootstrap/dist/js/bootstrap.min.js"></script>
     <script src="../vendor/peerjs/peer.min.js"></script>
@@ -16,8 +17,25 @@
         html, body {
             font-size: 0.85em;
         }
+        #game-results,
         .queue {
             width: 600px;
+        }
+        #game-results th,
+        #game-results td {
+            width: 80px;
+            text-align: center;
+        }
+        #game-results th:first-child,
+        #game-results td:first-child {
+            width: auto;
+            text-align: left;
+        }
+        #game-results .animal {
+            margin: 0 auto;
+        }
+        #game-results .score {
+            margin: 5px 0 0 0;
         }
         #games-list {
             white-space: nowrap;
@@ -81,6 +99,21 @@
     </table>
     <div id="games-list">
     </div>
+    <table id="game-results" class="table table-condensed table-bordered">
+        <thead>
+        <tr>
+            <th>Finish Time</th>
+            <th>1st</th>
+            <th>2nd</th>
+            <th>3rd</th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr>
+            <td colspan="4">No results yet.</td>
+        </tr>
+        </tbody>
+    </table>
 </div>
 </body>
 </html>

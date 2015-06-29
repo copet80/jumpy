@@ -66,7 +66,7 @@
          * How many milliseconds before game starts.
          * @type {number}
          */
-        var COUNTDOWN_TIME = 5000;
+        var COUNTDOWN_TIME = 20000;
 
         /**
          * How many milliseconds before game ends.
@@ -138,6 +138,35 @@
                     $('#players-list .queue tbody').append(row);
                 });
             }
+        }
+
+        /**
+         * Adds game result entry.
+         * @param {PeerConnection[]} winners
+         */
+        function addResult(winners) {
+            var createPeerColumn = function(peerConn) {
+                var column = $('<td></td>');
+                if (peerConn) {
+                    var animal = $('<div class="animal"></div>');
+                    animal.css("background-position", "0 " + (ANIMALS.indexOf(peerConn.animalId) * -44) + "px");
+                    var score = $('<div class="score">' + peerConn.score + '</div>');
+                    column.append(animal);
+                    column.append(score);
+                }
+                return column;
+            };
+
+            if ($('#game-results tbody tr').text().trim() === 'No results yet.') {
+                $('#game-results tbody').html('');
+            }
+
+            var row = $('<tr></tr>');
+            row.append($('<td>' + moment().format('DD/MM/YYYY HH:mm:ss') + '</td>'));
+            row.append(createPeerColumn(winners[0]));
+            row.append(createPeerColumn(winners[1]));
+            row.append(createPeerColumn(winners[2]));
+            $('#game-results tbody').append(row);
         }
 
         /**
@@ -238,6 +267,7 @@
                                 ranks: ranks
                             });
                         });
+                        addResult(peers);
                         delete peersByGameId[gameId];
                         delete endTimesByGameId[gameId];
                         updateGamesList();

@@ -5,6 +5,7 @@
     "peerjs": "~0.3.14",
     "bootstrap": "~3.3.4",
     "font-awesome": "~4.3.0",
-    "seedrandom": "~2.4.0"
+    "seedrandom": "~2.4.0",
+    "moment": "~2.10.3"
   }
 }
