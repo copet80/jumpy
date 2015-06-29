@@ -1,4 +1,42 @@
 (function() {
+    /**
+     * Connects using PeerJS key to the cloud.
+     * @type {number}
+     */
+    const MODE_LIVE = 0;
+
+    /**
+     * Connects to host specified in the host.
+     * @type {number}
+     */
+    const MODE_HOST = 1;
+
+    /**
+     * Connects to local.
+     * @type {number}
+     */
+    const MODE_LOCALHOST = 2;
+
+    /**
+     * Connection mode.
+     * @see MODE_LIVE
+     * @see MODE_DEV
+     * @see MODE_LOCAL
+     */
+    var MODE = MODE_HOST;
+
+    /**
+     * Host to connect to when MODE_HOST is used.
+     * @type {string}
+     */
+    var host = 'anthonytdt.objective.com';
+
+    /**
+     * Port to run socket on.
+     * @type {number}
+     */
+    var port = 8888;
+
     $(document).ready(function() {
         const ANIMALS = [
             "Bat",
@@ -441,12 +479,28 @@
          * Peer object for this admin.
          * @type {Peer}
          */
-        var peer = new Peer('jumpyadmin', {
-            //key: 'apv9cn0q4669wwmi',
-            port: 9999,
-            host: 'localhost'
-            //host: 'anthonytdt.objective.com'
-        });
+        var peer;
+        switch (MODE) {
+            case MODE_LIVE:
+                peer = new Peer('jumpyadmin', {
+                    key: 'apv9cn0q4669wwmi'
+                });
+                break;
+
+            case MODE_LOCALHOST:
+                peer = new Peer('jumpyadmin', {
+                    port: port,
+                    host: 'localhost'
+                });
+                break;
+
+            case MODE_HOST:
+                peer = new Peer('jumpyadmin', {
+                    port: port,
+                    host: host
+                });
+                break;
+        }
 
         peer.on('open', function(id) {
             log('[OPEN] Peer ID: ' + id);
