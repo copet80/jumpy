@@ -20,6 +20,20 @@ define([
      */
     PlatformGroup.prototype._seed = 0;
 
+    /**
+     * @private
+     * The index of the platform to start showing hint from.
+     * @type {number}
+     */
+    PlatformGroup.prototype._startHintPlatformIndex = -1;
+
+    /**
+     * @private
+     * The index of the platform to stop showing hint from.
+     * @type {number}
+     */
+    PlatformGroup.prototype._stopHintPlatformIndex = -1;
+
     // ===========================================
     //  Constructor
     // ===========================================
@@ -71,6 +85,20 @@ define([
         return Math.floor(Math.rand() * 3);
     };
 
+    /**
+     * Shows hint for a number of platforms.
+     * @param {number} The index of the platform to start showing hint from.
+     * @param {number} The number of platforms to show hint for before it's turned off.
+     */
+    PlatformGroup.prototype.showHint = function(startPlatformIndex, count) {
+        if (typeof(count) === 'undefined' || count === null || isNaN(count)) {
+            count = 10;
+        }
+        this._startHintPlatformIndex = startPlatformIndex;
+        this._stopHintPlatformIndex = this._startHintPlatformIndex + count;
+        this.update(this._step, true);
+    };
+
     // ===========================================
     //  Private Methods
     // ===========================================
@@ -84,6 +112,7 @@ define([
         if (object.index !== platformIndex || forceUpdate) {
             object.index = platformIndex;
             object.type = this.getPlatformType(platformIndex);
+            object.showHint = object.index > this._startHintPlatformIndex && object.index < this._stopHintPlatformIndex;
         }
     };
 

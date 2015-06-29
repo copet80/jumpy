@@ -164,6 +164,13 @@ define([
      */
     Game.prototype._shake = 0;
 
+    /**
+     * @private
+     * Number of consecutive missed jump.
+     * @type {number}
+     */
+    Game.prototype._jumpMissCount = 0;
+
     // ===========================================
     //  Constructor
     // ===========================================
@@ -301,6 +308,7 @@ define([
         if (this._myCharacter) {
             this._resetCharacter(this._myCharacter);
         }
+        this._platforms.showHint(0);
         this.resume();
     };
 
@@ -648,6 +656,7 @@ define([
         }
 
         if (jumpSuccess === 1) {
+            this._jumpMissCount = 0;
             this._playJumpSound(this._myCharacter);
             this.jumpToPlatform(this._myCharacter, ++this._platformIndex);
 
@@ -656,6 +665,10 @@ define([
             event.score = this._platformIndex * Platform.SPRITE_HEIGHT;
             this.dispatchEvent(event);
         } else if (jumpSuccess === 2) {
+            if (++this._jumpMissCount >= 3) {
+                this._platforms.showHint(this._platformIndex);
+                this._jumpMissCount = 0;
+            }
             this._playJumpSound(this._myCharacter);
             this.jumpMissed(this._myCharacter);
         }

@@ -64,6 +64,20 @@ define([
      */
     Platform.prototype._type = null;
 
+    /**
+     * @private
+     * Current sprite index.
+     * @type {number}
+     */
+    Platform.prototype._currentSpriteIndex = 0;
+
+    /**
+     * @private
+     * True to use sprite with overlaid hint, false otherwise.
+     * @type {boolean}
+     */
+    Platform.prototype._showHint = false;
+
     // ===========================================
     //  Constructor
     // ===========================================
@@ -99,6 +113,24 @@ define([
     });
 
     /**
+     * Sprite width.
+     * @type {string}
+     */
+    Platform.prototype.__defineGetter__("showHint", function() {
+        return this._showHint;
+    });
+    /**
+     * @private
+     */
+    Platform.prototype.__defineSetter__("showHint", function(value) {
+        this._showHint = value;
+        var offset = this._showHint ? 6 : 0;
+        if (this.sprite.currentFrame !== (offset + this._currentSpriteIndex)) {
+            this.sprite.gotoAndStop(offset + this._currentSpriteIndex);
+        }
+    });
+
+    /**
      * Current platform type.
      * @type {string}
      */
@@ -113,15 +145,18 @@ define([
         this._type = value;
         switch (this._type) {
             case Platform.TYPE_CENTER:
-                this.sprite.gotoAndStop(rand() < 0.5 ? 0 : 1);
+                this._currentSpriteIndex = rand() < 0.5 ? 0 : 1;
+                this.showHint = this._showHint;
                 break;
 
             case Platform.TYPE_RIGHT:
-                this.sprite.gotoAndStop(rand() < 0.5 ? 2 : 3);
+                this._currentSpriteIndex = rand() < 0.5 ? 2 : 3;
+                this.showHint = this._showHint;
                 break;
 
             case Platform.TYPE_LEFT:
-                this.sprite.gotoAndStop(rand() < 0.5 ? 4 : 5);
+                this._currentSpriteIndex = rand() < 0.5 ? 4 : 5;
+                this.showHint = this._showHint;
                 break;
         }
     });
