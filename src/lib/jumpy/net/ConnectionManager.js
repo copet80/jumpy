@@ -46,8 +46,8 @@ define([
      * Port to run socket on.
      * @type {number}
      */
-    var port = 8888;
-    
+    var port = 9999;
+
     /**
      * @private
      * Debug mode.
@@ -215,20 +215,20 @@ define([
     ConnectionManager.prototype.connect = function() {
         switch (MODE) {
             case MODE_LIVE:
-                this._peer = new Peer('jumpyadmin', {
+                this._peer = new Peer({
                     key: 'apv9cn0q4669wwmi'
                 });
                 break;
 
             case MODE_LOCALHOST:
-                this._peer = new Peer('jumpyadmin', {
+                this._peer = new Peer({
                     port: port,
                     host: 'localhost'
                 });
                 break;
 
             case MODE_HOST:
-                this._peer = new Peer('jumpyadmin', {
+                this._peer = new Peer({
                     port: port,
                     host: host
                 });

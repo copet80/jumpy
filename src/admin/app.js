@@ -23,7 +23,7 @@
      * @see MODE_DEV
      * @see MODE_LOCAL
      */
-    var MODE = MODE_HOST;
+    var MODE = MODE_LOCALHOST;
 
     /**
      * Host to connect to when MODE_HOST is used.
@@ -35,7 +35,7 @@
      * Port to run socket on.
      * @type {number}
      */
-    var port = 8888;
+    var port = 9999;
 
     $(document).ready(function() {
         const ANIMALS = [
