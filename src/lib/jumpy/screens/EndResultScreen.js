@@ -531,6 +531,12 @@ define([
     EndResultScreen.prototype._showLose = function(animalIdsMapping, ranks) {
         this.reset();
 
+        try {
+            this._rank1stCharacter.gotoAndStop(animalIdsMapping[ranks[0]] + "_" + SpriteSheetConfig.IDLE);
+            this._rank2ndCharacter.gotoAndStop(animalIdsMapping[ranks[1]] + "_" + SpriteSheetConfig.IDLE);
+            this._rank3rdCharacter.gotoAndStop(animalIdsMapping[ranks[2]] + "_" + SpriteSheetConfig.IDLE);
+        } catch (error) {}
+
         SoundManager.getInstance().playSound(SoundDictionary.SOUND_LOSE);
 
         this._oopsText.scaleX = this._oopsText.scaleY = 0;

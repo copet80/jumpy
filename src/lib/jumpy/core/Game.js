@@ -613,28 +613,30 @@ define([
      */
     Game.prototype.handleDocumentKeyDown = function(event) {
         if (this._isPaused) {
-            // change character
-            var animalIndex;
-            switch (event.keyCode) {
-                // LEFT key
-                case 37:
-                    animalIndex = GameConfig.ANIMALS.indexOf(this._myCharacter.animalId);
-                    if (--animalIndex < 0) {
-                        animalIndex = GameConfig.ANIMALS.length - 1;
-                    }
-                    this._myCharacter.animalId = GameConfig.ANIMALS[animalIndex];
-                    this.dispatchEvent(new createjs.Event(Game.MY_ANIMAL_CHANGE));
-                    break;
+            if (!GameConfig.DEMO_MODE) {
+                // change character
+                var animalIndex;
+                switch (event.keyCode) {
+                    // LEFT key
+                    case 37:
+                        animalIndex = GameConfig.ANIMALS.indexOf(this._myCharacter.animalId);
+                        if (--animalIndex < 0) {
+                            animalIndex = GameConfig.ANIMALS.length - 1;
+                        }
+                        this._myCharacter.animalId = GameConfig.ANIMALS[animalIndex];
+                        this.dispatchEvent(new createjs.Event(Game.MY_ANIMAL_CHANGE));
+                        break;
 
-                // RIGHT key
-                case 39:
-                    animalIndex = GameConfig.ANIMALS.indexOf(this._myCharacter.animalId);
-                    if (++animalIndex >= GameConfig.ANIMALS.length) {
-                        animalIndex = 0;
-                    }
-                    this._myCharacter.animalId = GameConfig.ANIMALS[animalIndex];
-                    this.dispatchEvent(new createjs.Event(Game.MY_ANIMAL_CHANGE));
-                    break;
+                    // RIGHT key
+                    case 39:
+                        animalIndex = GameConfig.ANIMALS.indexOf(this._myCharacter.animalId);
+                        if (++animalIndex >= GameConfig.ANIMALS.length) {
+                            animalIndex = 0;
+                        }
+                        this._myCharacter.animalId = GameConfig.ANIMALS[animalIndex];
+                        this.dispatchEvent(new createjs.Event(Game.MY_ANIMAL_CHANGE));
+                        break;
+                }
             }
             return;
         }
@@ -655,6 +657,15 @@ define([
             case 39: jumpSuccess = nextPlatformType === Platform.TYPE_RIGHT ? 1 : 2; break;
         }
 
+        this._processJump(jumpSuccess);
+    };
+
+    /**
+     * @private
+     * Processes and animates the jump action.
+     * @param {number} jumpSuccess
+     */
+    Game.prototype._processJump = function(jumpSuccess) {
         if (jumpSuccess === 1) {
             this._jumpMissCount = 0;
             this._playJumpSound(this._myCharacter);

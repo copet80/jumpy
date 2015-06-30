@@ -85,7 +85,7 @@ define([
      * True to play demo mode, which plays by itself and no user control.
      * @type {boolean}
      */
-    GameConfig.DEMO_MODE = true;
+    GameConfig.DEMO_MODE = false;
 
     /**
      * Animal IDs.

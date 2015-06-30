@@ -314,7 +314,6 @@ define([
         if (this._isPaused) {
             return;
         }
-        console.log(event.keyCode);
         switch (event.keyCode) {
             // ENTER key
             case 13:
