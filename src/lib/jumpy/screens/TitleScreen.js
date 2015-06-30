@@ -8,8 +8,10 @@ define([
     "jumpy/core/GameConfig",
     "jumpy/core/Countdown",
     "jumpy/sprite/SpriteDictionary",
+    "jumpy/sound/SoundDictionary",
+    "jumpy/sound/SoundManager",
     "jumpy/controls/Button"
-], function(BaseScreen, GameConfig, Countdown, SpriteDictionary, Button) {
+], function(BaseScreen, GameConfig, Countdown, SpriteDictionary, SoundDictionary, SoundManager, Button) {
     // ===========================================
     //  Event Types
     // ===========================================
@@ -302,6 +304,27 @@ define([
         if (typeof(this.gameStartTime) !== 'undefined' && !isNaN(this.gameStartTime)) {
             var now = new Date().getTime() + this.timeDiff;
             this._countdown.value = Math.floor((this.gameStartTime - now) * 0.001);
+        }
+    };
+
+    /**
+     * Handles document key down.
+     */
+    TitleScreen.prototype.handleDocumentKeyDown = function(event) {
+        if (this._isPaused) {
+            return;
+        }
+        console.log(event.keyCode);
+        switch (event.keyCode) {
+            // ENTER key
+            case 13:
+            // SPACE key
+            case 32:
+                if (this._btnPlay.clip.visible) {
+                    SoundManager.getInstance().playSound(SoundDictionary.SOUND_BUTTON_CLICK);
+                    this.dispatchEvent(new createjs.Event(TitleScreen.PLAY_CLICK));
+                }
+                break;
         }
     };
 

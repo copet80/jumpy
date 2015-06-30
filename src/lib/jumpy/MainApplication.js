@@ -383,6 +383,12 @@ define([
         if (__game) {
             __game.handleDocumentKeyDown(event);
         }
+        if (__titleScreen) {
+            __titleScreen.handleDocumentKeyDown(event);
+        }
+        if (__endResultScreen) {
+            __endResultScreen.handleDocumentKeyDown(event);
+        }
     }
 
     /**

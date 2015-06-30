@@ -82,6 +82,12 @@ define([
     GameConfig.JUMP_FAIL_DURATION = 500;
 
     /**
+     * True to play demo mode, which plays by itself and no user control.
+     * @type {boolean}
+     */
+    GameConfig.DEMO_MODE = true;
+
+    /**
      * Animal IDs.
      * @type {object[]}
      */

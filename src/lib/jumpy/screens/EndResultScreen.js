@@ -377,6 +377,26 @@ define([
         }
     };
 
+    /**
+     * Handles document key down.
+     */
+    EndResultScreen.prototype.handleDocumentKeyDown = function(event) {
+        if (this._isPaused) {
+            return;
+        }
+        switch (event.keyCode) {
+            // ENTER key
+            case 13:
+            // SPACE key
+            case 32:
+                if (this._btnBackToTitle.clip.visible) {
+                    SoundManager.getInstance().playSound(SoundDictionary.SOUND_BUTTON_CLICK);
+                    this.dispatchEvent(new createjs.Event(EndResultScreen.BACK_TO_TITLE_CLICK));
+                }
+                break;
+        }
+    };
+
     // ===========================================
     //  Protected Methods
     // ===========================================

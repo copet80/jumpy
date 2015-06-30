@@ -104,7 +104,7 @@
          * How many milliseconds before game starts.
          * @type {number}
          */
-        var COUNTDOWN_TIME = 20000;
+        var COUNTDOWN_TIME = 5000;
 
         /**
          * How many milliseconds before game ends.
