@@ -85,7 +85,13 @@ define([
      * True to play demo mode, which plays by itself and no user control.
      * @type {boolean}
      */
-    GameConfig.DEMO_MODE = false;
+    GameConfig.DEMO_MODE = true;
+
+    /**
+     * Seed number to control the demo randomness.
+     * @type {number}
+     */
+    GameConfig.DEMO_SEED = 1;
 
     /**
      * Animal IDs.

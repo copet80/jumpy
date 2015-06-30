@@ -81,7 +81,11 @@ define([
      * @returns {number} Platform type.
      */
     PlatformGroup.prototype.getPlatformType = function(index) {
-        Math.rand = new Math.seedrandom(this.seed.toString() + index.toString());
+        if (GameConfig.DEMO_MODE) {
+            Math.rand = new Math.seedrandom(GameConfig.DEMO_SEED.toString() + index.toString());
+        } else {
+            Math.rand = new Math.seedrandom(this.seed.toString() + index.toString());
+        }
         return Math.floor(Math.rand() * 3);
     };
 

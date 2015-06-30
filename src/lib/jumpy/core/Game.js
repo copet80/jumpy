@@ -362,6 +362,39 @@ define([
             character.y = this._currentStep - character.ry + character.y0;
             character.update();
         }
+
+        if (GameConfig.DEMO_MODE && !this._isPaused) {
+            // ignore if still jumping
+            if (!createjs.Tween.hasActiveTweens(this._myCharacter)) {
+                if (!Math.demoRand) {
+                    Math.demoRandTries = 0;
+                    this._randomizeDemoJump();
+                }
+                var jumpResult = Math.demoRand();
+                if (jumpResult > 0.95) {
+                    // missed jump
+                    ++Math.demoRandTries;
+                    this._randomizeDemoJump();
+                    this._processJump(2);
+                } else if (jumpResult > 0.7) {
+                    // successfully jump
+                    Math.demoRandTries = 0;
+                    this._randomizeDemoJump();
+                    this._processJump(1);
+                } else {
+                    // do nothing
+                    ++Math.demoRandTries;
+                    this._randomizeDemoJump();
+                }
+            }
+        }
+    };
+
+    /**
+     * @private
+     */
+    Game.prototype._randomizeDemoJump = function() {
+        Math.demoRand = new Math.seedrandom(GameConfig.DEMO_SEED.toString() + this._platformIndex.toString() + Math.demoRandTries.toString() + this._myCharacter.animalId);
     };
 
     /**
@@ -613,30 +646,28 @@ define([
      */
     Game.prototype.handleDocumentKeyDown = function(event) {
         if (this._isPaused) {
-            if (!GameConfig.DEMO_MODE) {
-                // change character
-                var animalIndex;
-                switch (event.keyCode) {
-                    // LEFT key
-                    case 37:
-                        animalIndex = GameConfig.ANIMALS.indexOf(this._myCharacter.animalId);
-                        if (--animalIndex < 0) {
-                            animalIndex = GameConfig.ANIMALS.length - 1;
-                        }
-                        this._myCharacter.animalId = GameConfig.ANIMALS[animalIndex];
-                        this.dispatchEvent(new createjs.Event(Game.MY_ANIMAL_CHANGE));
-                        break;
+            // change character
+            var animalIndex;
+            switch (event.keyCode) {
+                // LEFT key
+                case 37:
+                    animalIndex = GameConfig.ANIMALS.indexOf(this._myCharacter.animalId);
+                    if (--animalIndex < 0) {
+                        animalIndex = GameConfig.ANIMALS.length - 1;
+                    }
+                    this._myCharacter.animalId = GameConfig.ANIMALS[animalIndex];
+                    this.dispatchEvent(new createjs.Event(Game.MY_ANIMAL_CHANGE));
+                    break;
 
-                    // RIGHT key
-                    case 39:
-                        animalIndex = GameConfig.ANIMALS.indexOf(this._myCharacter.animalId);
-                        if (++animalIndex >= GameConfig.ANIMALS.length) {
-                            animalIndex = 0;
-                        }
-                        this._myCharacter.animalId = GameConfig.ANIMALS[animalIndex];
-                        this.dispatchEvent(new createjs.Event(Game.MY_ANIMAL_CHANGE));
-                        break;
-                }
+                // RIGHT key
+                case 39:
+                    animalIndex = GameConfig.ANIMALS.indexOf(this._myCharacter.animalId);
+                    if (++animalIndex >= GameConfig.ANIMALS.length) {
+                        animalIndex = 0;
+                    }
+                    this._myCharacter.animalId = GameConfig.ANIMALS[animalIndex];
+                    this.dispatchEvent(new createjs.Event(Game.MY_ANIMAL_CHANGE));
+                    break;
             }
             return;
         }
