@@ -6,6 +6,7 @@
     "bootstrap": "~3.3.4",
     "font-awesome": "~4.3.0",
     "seedrandom": "~2.4.0",
-    "moment": "~2.10.3"
+    "moment": "~2.10.3",
+    "jsSHA": "~2.0.1"
   }
 }

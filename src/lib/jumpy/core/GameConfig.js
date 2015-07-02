@@ -85,7 +85,13 @@ define([
      * True to play demo mode, which plays by itself and no user control.
      * @type {boolean}
      */
-    GameConfig.DEMO_MODE = true;
+    GameConfig.DEMO_MODE = false;
+
+    /**
+     * Time delay before player starts jumping.
+     * @type {number}
+     */
+    GameConfig.DEMO_START_DELAY = 1000;
 
     /**
      * Seed number to control the demo randomness.

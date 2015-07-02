@@ -105,6 +105,10 @@ define([
      * Initializes everything.
      */
     function init() {
+        window.onerror = function() {
+            self.location = '/index.html';
+        };
+
         // initialize screens
         __titleScreen = new TitleScreen("titleScreen");
         __titleScreen.on(TitleScreen.PLAY_CLICK, onTitleScreenPlayClick);
@@ -116,6 +120,7 @@ define([
         __game.clip.visible = false;
         __game.on(Game.MY_CHARACTER_JUMP, onMyCharacterJump);
         __game.on(Game.MY_ANIMAL_CHANGE, onMyAnimalChange);
+        __game.on(Game.MY_RANK_CHANGE, onMyRankChange);
 
         // initialize HUD screen
         __hudScreen = new HUDScreen("hudScreen");
@@ -159,6 +164,7 @@ define([
         showTitleScreen();
         __connectionManager.animalId = __game.currentAnimalId;
         __connectionManager.connect();
+        document.onkeyup = onCharacterSelectChange;
     }
 
     /**
@@ -242,7 +248,7 @@ define([
         __hudScreen.clip.visible = true;
         __hudScreen.reset();
         __hudScreen.resume();
-        __game.resume();
+        __game.resume(__titleScreen.gameStartTime);
         __endResultScreen.clip.visible = false;
         __endResultScreen.reset();
         __endResultScreen.pause();
@@ -387,7 +393,7 @@ define([
             __titleScreen.handleDocumentKeyDown(event);
         }
         if (__endResultScreen) {
-            __endResultScreen.handleDocumentKeyDown(event);
+            __titleScreen.handleDocumentKeyDown(event);
         }
     }
 
@@ -457,6 +463,15 @@ define([
     /**
      * @private
      */
+    function onCharacterSelectChange(event) {
+        if (__game) {
+            __game.selectCharacter(event);
+        }
+    }
+
+    /**
+     * @private
+     */
     function onPeerAdd(event) {
         __game.addPeer(event.peerId, event.animalId);
     }
@@ -479,6 +494,7 @@ define([
      * @private
      */
     function onMyCharacterJump(event) {
+        __hudScreen.score = event.score;
         __connectionManager.updateScore(event.score);
         __connectionManager.updatePlatformIndex(event.platformIndex);
     }
@@ -488,6 +504,15 @@ define([
      */
     function onMyAnimalChange(event) {
         __connectionManager.animalId = __game.currentAnimalId;
+    }
+
+    /**
+     * @private
+     */
+    function onMyRankChange(event) {
+        if (__hudScreen.clip.visible) {
+            __hudScreen.rank = __game.currentRank;
+        }
     }
 
     return MainApplication;

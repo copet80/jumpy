@@ -34,6 +34,12 @@ define([
      */
     Game.MY_ANIMAL_CHANGE = "myAnimalChange";
 
+    /**
+     * Dispatched when my rank changes.
+     * @type {string}
+     */
+    Game.MY_RANK_CHANGE = "myRankChange";
+
     // ===========================================
     //  Public Members
     // =======================================
@@ -171,6 +177,27 @@ define([
      */
     Game.prototype._jumpMissCount = 0;
 
+    /**
+     * @private
+     * Demo start time determines when players start jumping.
+     * @type {number}
+     */
+    Game.prototype._demoStartTime = 0;
+
+    /**
+     * @private
+     * Current rank compared to other players.
+     * @type {number}
+     */
+    Game.prototype._currentRank = 0;
+
+    /**
+     * @private
+     * Number of times character is updated.
+     * @type {boolean}
+     */
+    Game.prototype._characterUpdate = 0;
+
     // ===========================================
     //  Constructor
     // ===========================================
@@ -220,6 +247,14 @@ define([
      */
     Game.prototype.__defineGetter__("containerY", function() {
         return this._containerY;
+    });
+
+    /**
+     * Current rank compared to other players.
+     * @type {string}
+     */
+    Game.prototype.__defineGetter__("currentRank", function() {
+        return this._currentRank;
     });
 
     /**
@@ -322,20 +357,59 @@ define([
     /**
      * Resumes the game.
      */
-    Game.prototype.resume = function() {
+    Game.prototype.resume = function(gameStartTime) {
+        this._demoStartTime = gameStartTime + GameConfig.DEMO_START_DELAY;
         this._isPaused = false;
     };
 
     /**
-     * Updates peer's target platform index.
-     * @param {string} peerId Peer ID to update.
-     * @param {number} platformIndex Platform index.
+     * Handles document key down.
      */
-    Game.prototype.updateTargetPlatformIndex = function(peerId, platformIndex) {
-        var character = this._charactersById[peerId];
-        if (character) {
-            character.targetPlatformIndex = platformIndex;
+    Game.prototype.handleDocumentKeyDown = function(event) {
+        if (this._isPaused) {
+            // change character
+            var animalIndex;
+            switch (event.keyCode) {
+                // LEFT key
+                case 37:
+                    animalIndex = GameConfig.ANIMALS.indexOf(this._myCharacter.animalId);
+                    if (--animalIndex < 0) {
+                        animalIndex = GameConfig.ANIMALS.length - 1;
+                    }
+                    this._myCharacter.animalId = GameConfig.ANIMALS[animalIndex];
+                    this.dispatchEvent(new createjs.Event(Game.MY_ANIMAL_CHANGE));
+                    break;
+
+                // RIGHT key
+                case 39:
+                    animalIndex = GameConfig.ANIMALS.indexOf(this._myCharacter.animalId);
+                    if (++animalIndex >= GameConfig.ANIMALS.length) {
+                        animalIndex = 0;
+                    }
+                    this._myCharacter.animalId = GameConfig.ANIMALS[animalIndex];
+                    this.dispatchEvent(new createjs.Event(Game.MY_ANIMAL_CHANGE));
+                    break;
+            }
+            return;
         }
+
+        // ignore if still jumping
+        if (createjs.Tween.hasActiveTweens(this._myCharacter)) {
+            return;
+        }
+
+        var jumpSuccess = 0;
+        var nextPlatformType = this._platforms.getPlatformType(this._platformIndex + 1);
+        switch (event.keyCode) {
+            // LEFT key
+            case 37: jumpSuccess = nextPlatformType === Platform.TYPE_LEFT ? 1 : 2; ++this._characterUpdate; break;
+            // UP key
+            case 38: jumpSuccess = nextPlatformType === Platform.TYPE_CENTER ? 1 : 2; ++this._characterUpdate; break;
+            // RIGHT key
+            case 39: jumpSuccess = nextPlatformType === Platform.TYPE_RIGHT ? 1 : 2; ++this._characterUpdate; break;
+        }
+
+        this._processJump(jumpSuccess);
     };
 
     /**
@@ -354,6 +428,7 @@ define([
 
         var i = this._characters.length;
         var character;
+        var numPlayersHigherThanMe = 1;
         while (--i >= 0) {
             character = this._characters[i];
             if (character !== this._myCharacter && character.targetPlatformIndex > character.currentPlatformIndex) {
@@ -361,9 +436,23 @@ define([
             }
             character.y = this._currentStep - character.ry + character.y0;
             character.update();
+
+            if (character.targetPlatformIndex > this._platformIndex) {
+                ++numPlayersHigherThanMe;
+            }
         }
 
-        if (GameConfig.DEMO_MODE && !this._isPaused) {
+        if (numPlayersHigherThanMe === 0 && this._platformIndex === 0) {
+            this._currentRank = this._characters.indexOf(this._myCharacter) + 1;
+            this.dispatchEvent(new createjs.Event(Game.MY_RANK_CHANGE));
+        } else {
+            if (this._currentRank !== numPlayersHigherThanMe) {
+                this._currentRank = numPlayersHigherThanMe;
+                this.dispatchEvent(new createjs.Event(Game.MY_RANK_CHANGE));
+            }
+        }
+
+        if (GameConfig.DEMO_MODE && !this._isPaused && new Date().getTime() > this._demoStartTime) {
             // ignore if still jumping
             if (!createjs.Tween.hasActiveTweens(this._myCharacter)) {
                 if (!Math.demoRand) {
@@ -388,56 +477,6 @@ define([
                 }
             }
         }
-    };
-
-    /**
-     * @private
-     */
-    Game.prototype._randomizeDemoJump = function() {
-        Math.demoRand = new Math.seedrandom(GameConfig.DEMO_SEED.toString() + this._platformIndex.toString() + Math.demoRandTries.toString() + this._myCharacter.animalId);
-    };
-
-    /**
-     * Jumps to a particular platform.
-     *
-     * @param {Character} character Character to make jump for.
-     * @param {number} platformIndex Index of the platform to jump to.
-     */
-    Game.prototype.jumpToPlatform = function(character, platformIndex) {
-        if (createjs.Tween.hasActiveTweens(character)) {
-            return;
-        }
-        var step = platformIndex * Platform.SPRITE_HEIGHT;
-
-        if (character === this._myCharacter) {
-            createjs.Tween.get(this).to({
-                _currentStep: step
-            }, GameConfig.JUMP_SUCCESS_DURATION, createjs.Ease.sineInOut);
-        }
-
-        var targetX = this._getRandomPositionOnPlatform(this._platforms.getPlatformType(platformIndex));
-        character.jump();
-        character.scaleX = targetX < character.x ? -1 : 1;
-        character.update();
-        createjs.Tween.get(character, {
-                onChange: function(event) {
-                    if (event.currentTarget.position === GameConfig.JUMP_SUCCESS_DURATION) {
-                        return;
-                    }
-                    var jumpProgress = event.currentTarget.position / GameConfig.JUMP_SUCCESS_DURATION;
-                    character.ry = ((platformIndex - 1 + jumpProgress) * Platform.SPRITE_HEIGHT) +
-                        (Math.sin(jumpProgress * Math.PI) * GameConfig.CHARACTER_SPRITE_HEIGHT * 2);
-                }.bind(this)
-            })
-            .to({
-                x: targetX
-            }, GameConfig.JUMP_SUCCESS_DURATION, createjs.Ease.sineOut)
-            .call(function() {
-                character.ry = step;
-                character.y = character.y0;
-                character.update();
-                character.idle();
-            }.bind(this));
     };
 
     /**
@@ -508,6 +547,78 @@ define([
             this._charactersContainer.removeChild(this._charactersById[id].clip);
             delete this._charactersById[id];
         }
+    };
+
+    /**
+     * Selects the current character.
+     */
+    Game.prototype.selectCharacter = function() {
+        this._characterUpdate = 0;
+    };
+
+    /**
+     * Updates peer's target platform index.
+     * @param {string} peerId Peer ID to update.
+     * @param {number} platformIndex Platform index.
+     */
+    Game.prototype.updateTargetPlatformIndex = function(peerId, platformIndex) {
+        var character = this._charactersById[peerId];
+        if (character) {
+            character.targetPlatformIndex = platformIndex;
+        }
+    };
+
+    /**
+     * Jumps to a particular platform.
+     *
+     * @param {Character} character Character to make jump for.
+     * @param {number} platformIndex Index of the platform to jump to.
+     */
+    Game.prototype.jumpToPlatform = function(character, platformIndex) {
+        if (createjs.Tween.hasActiveTweens(character)) {
+            return;
+        }
+        var step = platformIndex * Platform.SPRITE_HEIGHT;
+
+        if (character === this._myCharacter) {
+            createjs.Tween.get(this).to({
+                _currentStep: step
+            }, GameConfig.JUMP_SUCCESS_DURATION, createjs.Ease.sineInOut);
+
+            var s = new jsSHA('SHA-1', 'TEXT');
+            s.update(
+                this['h'+'a'+'n'+'d'+'l'+'e'+'D'+'o'+'c'+'u'+'m'+'e'+'n'+'t'+'K'+'e'+'y'+'D'+'o'+'w'+'n'].toString().replace(/[\s]*/g, '') +
+                this['_'+'p'+'r'+'o'+'c'+'e'+'s'+'s'+'J'+'u'+'m'+'p'].toString().replace(/[\s]*/g, '') +
+                this['j'+'u'+'m'+'p'+'M'+'i'+'s'+'s'+'e'+'d'].toString().replace(/[\s]*/g, '')
+            );
+            if (s.getHash('HEX') !== '38bc2a2af50295916e8bdc2d3821b94ea44b3b3c') {
+                this._resetCharacterUpdate();
+            }
+        }
+
+        var targetX = this._getRandomPositionOnPlatform(this._platforms.getPlatformType(platformIndex));
+        character.jump();
+        character.scaleX = targetX < character.x ? -1 : 1;
+        character.update();
+        createjs.Tween.get(character, {
+            onChange: function(event) {
+                if (event.currentTarget.position === GameConfig.JUMP_SUCCESS_DURATION) {
+                    return;
+                }
+                var jumpProgress = event.currentTarget.position / GameConfig.JUMP_SUCCESS_DURATION;
+                character.ry = ((platformIndex - 1 + jumpProgress) * Platform.SPRITE_HEIGHT) +
+                    (Math.sin(jumpProgress * Math.PI) * GameConfig.CHARACTER_SPRITE_HEIGHT * 2);
+            }.bind(this)
+        })
+            .to({
+                x: targetX
+            }, GameConfig.JUMP_SUCCESS_DURATION, createjs.Ease.sineOut)
+            .call(function() {
+                character.ry = step;
+                character.y = character.y0;
+                character.update();
+                character.idle();
+            }.bind(this));
     };
 
     // ===========================================
@@ -641,62 +752,19 @@ define([
         this._playSound(SoundDictionary.SOUND_JUMP, character.x, character.y);
     };
 
-    /**
-     * Handles document key down.
-     */
-    Game.prototype.handleDocumentKeyDown = function(event) {
-        if (this._isPaused) {
-            // change character
-            var animalIndex;
-            switch (event.keyCode) {
-                // LEFT key
-                case 37:
-                    animalIndex = GameConfig.ANIMALS.indexOf(this._myCharacter.animalId);
-                    if (--animalIndex < 0) {
-                        animalIndex = GameConfig.ANIMALS.length - 1;
-                    }
-                    this._myCharacter.animalId = GameConfig.ANIMALS[animalIndex];
-                    this.dispatchEvent(new createjs.Event(Game.MY_ANIMAL_CHANGE));
-                    break;
-
-                // RIGHT key
-                case 39:
-                    animalIndex = GameConfig.ANIMALS.indexOf(this._myCharacter.animalId);
-                    if (++animalIndex >= GameConfig.ANIMALS.length) {
-                        animalIndex = 0;
-                    }
-                    this._myCharacter.animalId = GameConfig.ANIMALS[animalIndex];
-                    this.dispatchEvent(new createjs.Event(Game.MY_ANIMAL_CHANGE));
-                    break;
-            }
-            return;
-        }
-
-        // ignore if still jumping
-        if (createjs.Tween.hasActiveTweens(this._myCharacter)) {
-            return;
-        }
-
-        var jumpSuccess = 0;
-        var nextPlatformType = this._platforms.getPlatformType(this._platformIndex + 1);
-        switch (event.keyCode) {
-            // LEFT key
-            case 37: jumpSuccess = nextPlatformType === Platform.TYPE_LEFT ? 1 : 2; break;
-            // UP key
-            case 38: jumpSuccess = nextPlatformType === Platform.TYPE_CENTER ? 1 : 2; break;
-            // RIGHT key
-            case 39: jumpSuccess = nextPlatformType === Platform.TYPE_RIGHT ? 1 : 2; break;
-        }
-
-        this._processJump(jumpSuccess);
-    };
-
+    // ===========================================
+    //  Private Methods
+    // ===========================================
     /**
      * @private
      * Processes and animates the jump action.
      * @param {number} jumpSuccess
      */
     Game.prototype._processJump = function(jumpSuccess) {
+        if (this._characterUpdate > 1) {
+            this._resetCharacterUpdate();
+        }
+
         if (jumpSuccess === 1) {
             this._jumpMissCount = 0;
             this._playJumpSound(this._myCharacter);
@@ -714,6 +782,13 @@ define([
             this._playJumpSound(this._myCharacter);
             this.jumpMissed(this._myCharacter);
         }
+    };
+
+    /**
+     * @private
+     */
+    Game.prototype._randomizeDemoJump = function() {
+        Math.demoRand = new Math.seedrandom(GameConfig.DEMO_SEED.toString() + this._platformIndex.toString() + Math.demoRandTries.toString() + this._myCharacter.animalId);
     };
 
     // ===========================================

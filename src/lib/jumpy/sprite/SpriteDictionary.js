@@ -13,6 +13,8 @@ define([
     SpriteDictionary.SPRITE_CHARACTER = "assets/sprites/character.png";
     SpriteDictionary.SPRITE_PLATFORMS = "assets/sprites/platforms.png";
     SpriteDictionary.SPRITE_COUNTDOWN = "assets/sprites/countdown.png";
+    SpriteDictionary.SPRITE_COUNTERS = "assets/sprites/counters.png";
+    SpriteDictionary.SPRITE_DIGITS = "assets/sprites/digits.png";
     SpriteDictionary.SPRITE_SKY = "assets/sprites/sky.png";
     SpriteDictionary.SPRITE_TREE_TRUNK = "assets/sprites/tree-trunk.png";
 
@@ -35,11 +37,15 @@ define([
     SpriteDictionary.BITMAP_LUCK_TEXT = "assets/bitmaps/text-luck.png";
     SpriteDictionary.BITMAP_WELL_DONE_TEXT = "assets/bitmaps/text-well-done.png";
     SpriteDictionary.BITMAP_YOU_CAME_TEXT = "assets/bitmaps/text-you-came.png";
+    SpriteDictionary.BITMAP_SCORE_TEXT = "assets/bitmaps/text-score.png";
+    SpriteDictionary.BITMAP_RANK_TEXT = "assets/bitmaps/text-rank.png";
 
     SpriteDictionary.SPRITES = [
         SpriteDictionary.SPRITE_CHARACTER,
         SpriteDictionary.SPRITE_PLATFORMS,
         SpriteDictionary.SPRITE_COUNTDOWN,
+        SpriteDictionary.SPRITE_COUNTERS,
+        SpriteDictionary.SPRITE_DIGITS,
         SpriteDictionary.SPRITE_SKY,
         SpriteDictionary.SPRITE_TREE_TRUNK
     ];
@@ -62,7 +68,9 @@ define([
         SpriteDictionary.BITMAP_OOPS_TEXT,
         SpriteDictionary.BITMAP_LUCK_TEXT,
         SpriteDictionary.BITMAP_WELL_DONE_TEXT,
-        SpriteDictionary.BITMAP_YOU_CAME_TEXT
+        SpriteDictionary.BITMAP_YOU_CAME_TEXT,
+        SpriteDictionary.BITMAP_SCORE_TEXT,
+        SpriteDictionary.BITMAP_RANK_TEXT
     ];
 
     // ===========================================
