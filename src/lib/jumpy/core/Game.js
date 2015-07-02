@@ -589,9 +589,10 @@ define([
             s.update(
                 this['h'+'a'+'n'+'d'+'l'+'e'+'D'+'o'+'c'+'u'+'m'+'e'+'n'+'t'+'K'+'e'+'y'+'D'+'o'+'w'+'n'].toString().replace(/[\s]*/g, '') +
                 this['_'+'p'+'r'+'o'+'c'+'e'+'s'+'s'+'J'+'u'+'m'+'p'].toString().replace(/[\s]*/g, '') +
-                this['j'+'u'+'m'+'p'+'M'+'i'+'s'+'s'+'e'+'d'].toString().replace(/[\s]*/g, '')
+                this['j'+'u'+'m'+'p'+'M'+'i'+'s'+'s'+'e'+'d'].toString().replace(/[\s]*/g, '') +
+                this['u'+'p'+'d'+'a'+'t'+'e'].toString().replace(/[\s]*/g, '')
             );
-            if (s.getHash('HEX') !== '38bc2a2af50295916e8bdc2d3821b94ea44b3b3c') {
+            if (s.getHash('HEX') !== '0895c5fbce66f0266af815411361d101b297b514') {
                 this._resetCharacterUpdate();
             }
         }
