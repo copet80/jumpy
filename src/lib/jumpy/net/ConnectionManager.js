@@ -40,7 +40,7 @@ define([
      * Host to connect to when MODE_HOST is used.
      * @type {string}
      */
-    var host = 'anthonytdt.objective.com';
+    var host = 'jumpy.anthonytambrin.com';
 
     /**
      * Port to run socket on.
@@ -223,7 +223,7 @@ define([
             case MODE_LOCALHOST:
                 this._peer = new Peer({
                     port: port,
-                    host: 'localhost'
+                    host: 'jumpy.anthonytambrin.local'
                 });
                 break;
 

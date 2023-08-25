@@ -22,7 +22,7 @@ gulp.task('server', function() {
     gulp
         .src('src')
         .pipe(webserver({
-            host: 'anthonytdt.objective.com',
+            host: 'jumpy.anthonytambrin.com',
             port: 8888,
             livereload: true,
             directoryListing: true,

@@ -8,6 +8,9 @@
   "scripts": {
     "postinstall": "bower install --allow-root"
   },
+  "resolutions": {
+    "graceful-fs": "^4.2.11"
+  },
   "devDependencies": {
     "async": "^1.0.0",
     "express": "^4.12.4",

@@ -29,7 +29,7 @@
      * Host to connect to when MODE_HOST is used.
      * @type {string}
      */
-    var host = 'anthonytdt.objective.com';
+    var host = 'jumpy.anthonytambrin.com';
 
     /**
      * Port to run socket on.
@@ -490,7 +490,7 @@
             case MODE_LOCALHOST:
                 peer = new Peer('jumpyadmin', {
                     port: port,
-                    host: 'localhost'
+                    host: 'jumpy.anthonytambrin.local'
                 });
                 break;
 
