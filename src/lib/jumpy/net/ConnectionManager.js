@@ -34,7 +34,7 @@ define([
      * @see MODE_DEV
      * @see MODE_LOCAL
      */
-    var MODE = MODE_LOCALHOST;
+    var MODE = MODE_HOST;
 
     /**
      * Host to connect to when MODE_HOST is used.
