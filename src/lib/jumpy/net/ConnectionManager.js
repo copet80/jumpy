@@ -37,7 +37,7 @@ define(['createjs', 'jumpy/core/GameConfig'], function (createjs, GameConfig) {
    * Host to connect to when MODE_HOST is used.
    * @type {string}
    */
-  var host = 'jumpyserver.anthonytambrin.com';
+  var host = 'jumpyserver.anthonytambrin.local';
 
   /**
    * Port to run socket on.

@@ -21,7 +21,7 @@ gulp.task('admin', function (done) {
 gulp.task('server', function () {
   gulp.src('src').pipe(
     webserver({
-      host: '0.0.0.0',
+      host: 'localhost',
       port: 8888,
       livereload: true,
       directoryListing: true,
