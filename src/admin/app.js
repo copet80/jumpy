@@ -29,7 +29,7 @@
      * Host to connect to when MODE_HOST is used.
      * @type {string}
      */
-    var host = 'jumpy.anthonytambrin.com';
+    var host = 'jumpyserver.anthonytambrin.com';
 
     /**
      * Port to run socket on.

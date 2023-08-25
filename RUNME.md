@@ -18,3 +18,18 @@
 14. Run `npm install -g bower gulp@3.9.1`
 15. Run `npm install`
 16. Run `gulp server`
+
+## Troubleshooting
+If the following error occurs when running `gulp server`, 
+`ReferenceError: primordials is not defined`
+
+...make sure the `npm-shrinkwrap.json` only contains the following:
+```
+{
+  "dependencies": {
+    "graceful-fs": {
+        "version": "4.2.2"
+     }
+  }
+}
+```
